@@ -1,8 +1,8 @@
 # README
 
 ## Author
-Chuyang Chen 
-Yixiao Chen 
+- Chuyang Chen 
+- Yixiao Chen 
 
 ## Overview
 
