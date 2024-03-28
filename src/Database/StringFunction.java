@@ -8,7 +8,7 @@ package Database;
  * serialized record fit into 64 bytes
  */
 
-public class DataFile extends DBFile{
+public class StringFunction {
 
   private static final int RECORD_SIZE = 64;
 
@@ -25,7 +25,7 @@ public class DataFile extends DBFile{
 
   private String genres; // size = length * CHAR_SIZE
 
-  public DataFile(String readline) {
+  public StringFunction(String readline) {
     String[] data = readline.split(",");
     this.movieId = data[0];
     this.movieIDInt = Integer.parseInt(data[0]);
