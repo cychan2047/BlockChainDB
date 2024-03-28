@@ -10,23 +10,24 @@ public class DBController {
 
     private String userInput;
 
+    // Manages command-line interaction for the database
     public DBController() {
-        this.dbService = new DBService(); // TODO: Write function to decide which constructor to use
+        this.dbService = new DBService();
         this.scanner = new Scanner(System.in);
     }
 
-    // TODO: Implement the following methods
-
+    // Starts the command-line interface
     public void startCLI() {
         System.out.println("NoSQL>");
         String command;
-        while(!(command = scanner.nextLine().trim().equalsIgnoreCase(("quit")){
+        while(!(command = scanner.nextLine().trim().equalsIgnoreCase(("quit")) {
             processCommand(command.trim());
             System.out.println("NoSQL>");
         }
         System.out.println("Exiting NoSQL...");
     }
 
+    // Processes a command entered by the user
     private void processCommand(String command) {
         String[] parts = command.split("\\s+", 2);
         if (parts.length == 0) {
@@ -65,6 +66,7 @@ public class DBController {
         }
     }
 
+    // Getters and setters
     public DBService getDbService() {
         return dbService;
     }
