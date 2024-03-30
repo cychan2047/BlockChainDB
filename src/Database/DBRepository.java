@@ -111,7 +111,6 @@ public class DBRepository {
 
         return content.toString();
     }
-
     public void delete(String databaseName, int PFSFileCount) {
         String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
         File file = new File(pathname);
@@ -121,27 +120,21 @@ public class DBRepository {
             System.out.println("Failed to delete the file.");
         }
     }
-
     public int getBlockSize() {
         return blockSize;
     }
-
     public void setBlockSize(int blockSize) {
         this.blockSize = blockSize;
     }
-
     public int getFileSize() {
         return fileSize;
     }
-
     public void setFileSize(int fileSize) {
         this.fileSize = fileSize;
     }
-
     public String getCurrentPath() {
         return databaseDirectory;
     }
-
     public void setCurrentPath(String currentPath) {
         this.databaseDirectory = currentPath;
     }

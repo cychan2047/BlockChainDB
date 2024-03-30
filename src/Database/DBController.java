@@ -12,18 +12,17 @@ public class DBController {
 
     // Manages command-line interaction for the database
     public DBController() {
-        this.dbService = new DBService("TBD"); // TODO: Write function to decide which constructor to use
         this.scanner = new Scanner(System.in);
     }
 
     // Starts the command-line interface
     public void startCLI() {
-        System.out.println("NoSQL>");
         String command;
-        while(!(command = scanner.nextLine().trim().equalsIgnoreCase(("quit")) {
-            processCommand(command.trim());
+        do {
             System.out.println("NoSQL>");
-        }
+            command = scanner.nextLine().trim();
+            processCommand(command);
+        } while (!command.equalsIgnoreCase("quit"));
         System.out.println("Exiting NoSQL...");
     }
 
@@ -36,34 +35,50 @@ public class DBController {
         String action = parts[0].toLowerCase();
         String argument = parts.length > 1 ? parts[1] : "";
 
-        switch (action) {
-            case "open":
-                dbService.open();
-                break;
-            case "put":
-                dbService.put(argument);
-                break;
-            case "get":
-                dbService.get(argument);
-                break;
-            case "rm":
-                dbService.rm(argument);
-                break;
-            case "dir":
-                dbService.dir();
-                break;
-            case "find":
-                dbService.find(argument);
-                break;
-            case "kill":
-                dbService.kill(argument);
-                break;
-            case "quit":
-                dbService.quit();
-                break;
-            default:
-                System.out.println("Invalid command: " + parts[0]);
+        if (action.equals("open")) {
+            dbService = new DBService(argument);
+        } else if (dbService == null) {
+            System.out.println("No database is currently open. Please open a database first.");
+        } else {
+            switch (action) {
+                case "put":
+                    dbService.put(argument);
+                    break;
+                case "get":
+                    dbService.get(System.getProperty("user.dir"), argument);
+                    break;
+                case "rm":
+                    dbService.rm(argument);
+                    break;
+                case "dir":
+                    dbService.dir();
+                    break;
+                case "find":
+                    int lastDotIndex = argument.lastIndexOf(".");
+                    String tableName = argument.substring(0, lastDotIndex);
+                    int key = Integer.parseInt(argument.substring(lastDotIndex + 1));
+                    dbService.find(tableName, key);
+                    break;
+                case "putr":
+                    String[] partsArgument = argument.split("\\s+", 2);
+                    if (partsArgument.length != 2) {
+                        System.out.println("Invalid command: putr requires two arguments");
+                        break;
+                    }
+                    dbService.putr(partsArgument[0], partsArgument[1]);
+                    break;
+                case "kill":
+                    dbService.kill(argument);
+                    break;
+                case "quit":
+                    dbService.quit();
+                    break;
+                default:
+                    System.out.println("Invalid command: " + parts[0]);
+            }
         }
+
+
     }
 
     // Getters and setters

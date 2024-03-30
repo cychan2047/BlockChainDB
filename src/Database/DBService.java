@@ -12,7 +12,7 @@ public class DBService {
     private static final String PFS_DIRECTORY = "./src/Database/PFSFiles";
     private static final String TABLE_DIRECTORY = "./src/Database/KVTables";
     private static final int METADATA_PFS_FILE_NUM = 0;
-    private final String databaseName;
+    private String databaseName;
 
     private static final int BLOCK_SIZE = 256;
 
@@ -26,15 +26,9 @@ public class DBService {
         this.databaseName = databaseName;
     }
 
-    public DBService(int PFSFileCount, String databaseName) {
-        this.PFSFileCount = PFSFileCount;
-        this.dbRepository = new DBRepository(BLOCK_SIZE, FILE_SIZE, PFS_DIRECTORY);
-        this.databaseName = databaseName;
-    }
-
     public void open() {};
 
-    public void put(String databaseName, int METADATA_PFS_FILE_NUM, String TableName) {
+    public void put(String TableName) {
         // TableName example: "movies-test.csv"
         DBRepository repo = new DBRepository(BLOCK_SIZE, FILE_SIZE, PFS_DIRECTORY);
         File file = new File(TABLE_DIRECTORY + "/" + TableName);
@@ -43,24 +37,34 @@ public class DBService {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = reader.readLine()) != null) {
-
+                //TODO: Implement the logic to write the data to the database
             }
         } catch (IOException e) {
             Logger.getLogger(DBService.class.getName()).severe(e.getMessage());
         }
     };
 
-    public void get() {};
+    public void get(String OSPath, String tableName) {};
 
-    public void rm() {};
+    public void rm(String tableName) {};
 
-    public void dir() {};
+    public void dir() {
+        File directory = new File(TABLE_DIRECTORY);
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                System.out.println(file.getName());
+            }
+        } else {
+            System.out.println("No files found in the database directory.");
+        }
+    };
 
-    public void find(int key) {};
+    public void find(String tableName, int key) {};
 
     public void putr(String pathname, String remark) {};
 
-    public void kill() {};
+    public void kill(String databaseName) {};
 
     public void quit() {};
 
