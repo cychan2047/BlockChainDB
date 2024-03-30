@@ -12,7 +12,7 @@ public class DBController {
 
     // Manages command-line interaction for the database
     public DBController() {
-        this.dbService = new DBService();
+        this.dbService = new DBService("TBD"); // TODO: Write function to decide which constructor to use
         this.scanner = new Scanner(System.in);
     }
 
