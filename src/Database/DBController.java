@@ -11,7 +11,7 @@ public class DBController {
     private String userInput;
 
     public DBController() {
-        this.dbService = new DBService(); // TODO: Write function to decide which constructor to use
+        this.dbService = new DBService("TBD"); // TODO: Write function to decide which constructor to use
         this.scanner = new Scanner(System.in);
     }
 

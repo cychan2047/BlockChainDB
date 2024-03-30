@@ -67,10 +67,8 @@ public class DBRepository {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
     }
-
-
-    public void writePFSFile(String databaseName, int PFSFileCount, int offset, int blockNum, String content) throws IOException, IllegalArgumentException {
-        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
+    public void write(String databaseName, int PFSFileNum, int offset, int blockNum, String content) throws IOException, IllegalArgumentException {
+        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileNum;
 
         if (offset + content.length() > blockSize) {
             throw new IllegalArgumentException("Content exceeds block size.");
@@ -84,7 +82,7 @@ public class DBRepository {
         }
     }
 
-public String readPFSFile(String databaseName, int PFSFileCount, int offset, int blockNum) throws IOException {
+    public String readBlock(String databaseName, int PFSFileCount, int offset, int blockNum) throws IOException {
         String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
         StringBuilder content = new StringBuilder();
 
@@ -100,7 +98,21 @@ public String readPFSFile(String databaseName, int PFSFileCount, int offset, int
         return content.toString();
     }
 
-    public void deletePFSFile(String databaseName, int PFSFileCount) {
+    public String readChar(String databaseName, int PFSFileCount, int offset, int blockNum) throws IOException {
+        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
+        StringBuilder content = new StringBuilder();
+
+        try (RandomAccessFile file = new RandomAccessFile(pathname, "r")) {
+            file.seek(offset + blockNum * blockSize);
+            content.append(file.readChar());
+        } catch (IOException e) {
+            Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
+        }
+
+        return content.toString();
+    }
+
+    public void delete(String databaseName, int PFSFileCount) {
         String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
         File file = new File(pathname);
         if (file.delete()) {
