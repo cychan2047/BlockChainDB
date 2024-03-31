@@ -7,14 +7,18 @@ import static Database.DBUtil.Constants.*;
 
 public class DBRepository {
 
-    public DBRepository() {}
+    private String databaseName;
+
+    public DBRepository(String databaseName) {
+        this.databaseName = databaseName;
+    }
 
     // Directory: the relative path from the root directory
     //     Example: "./src/Database/PFSFiles"
-    public void createPFSFile(int PFSFileCount, String databaseName) {
+    public void createPFSFile(int PFSFileCount) {
         // Create a new file
         String name = databaseName + ".db" + PFSFileCount;
-        File file = new File(databaseDirectory, name);
+        File file = new File(DATABASE_DIRECTORY, name);
         try {
             boolean created = file.createNewFile();
             if (created) {
@@ -52,8 +56,8 @@ public class DBRepository {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
     }
-    public void write(String databaseName, int PFSFileNum, int offset, int blockNum, String content) throws IOException, IllegalArgumentException {
-        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileNum;
+    public void write(int PFSFileNum, int offset, int blockNum, String content) throws IOException, IllegalArgumentException {
+        String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileNum;
 
         if (offset + content.length() > BLOCK_SIZE) {
             throw new IllegalArgumentException("Content exceeds block size.");
@@ -67,8 +71,8 @@ public class DBRepository {
         }
     }
 
-    public String readBlock(String databaseName, int PFSFileCount, int offset, int blockNum) throws IOException {
-        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
+    public String readBlock(int PFSFileCount, int offset, int blockNum) throws IOException {
+        String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         StringBuilder content = new StringBuilder();
 
         try (RandomAccessFile file = new RandomAccessFile(pathname, "r")) {
@@ -83,8 +87,8 @@ public class DBRepository {
         return content.toString();
     }
 
-    public String readChar(String databaseName, int PFSFileCount, int offset, int blockNum) throws IOException {
-        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
+    public String readChar(int PFSFileCount, int offset, int blockNum) throws IOException {
+        String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         StringBuilder content = new StringBuilder();
         try (RandomAccessFile file = new RandomAccessFile(pathname, "r")) {
             file.seek(offset + blockNum * BLOCK_SIZE);
@@ -94,8 +98,8 @@ public class DBRepository {
         }
         return content.toString();
     }
-    public void delete(String databaseName, int PFSFileCount) {
-        String pathname = databaseDirectory + "/" + databaseName + ".db" + PFSFileCount;
+    public void delete(int PFSFileCount) {
+        String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         File file = new File(pathname);
         if (file.delete()) {
             System.out.println("File deleted: " + file.getName());
