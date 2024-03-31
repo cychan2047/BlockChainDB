@@ -4,28 +4,14 @@ import Database.DBRepository;
 
 import java.io.*;
 import java.util.logging.Logger;
+import static Database.DBUtil.Constants.*;
 
 public class MetadataWriter {
-    private static final int BLOCK_NUM = 0;
-    private static final int DB_NAME_OFFSET = 0;
-    private static final int DB_SIZE_OFFSET = 50;
-    private static final int PFS_FILE_COUNT_OFFSET = 60;
-    private static final int BLOCK_SIZE_OFFSET = 70;
-    private static final int KV_TABLE_COUNT = 80;
-    private static final int METADATA_PFS_FILE_NUM = 0;
-    private static final int METADATA_BLOCK_NUM = 0;
-    private final int BLOCK_SIZE;
-    private final int FILE_SIZE;
-    private final String dataFileDirectory;
 
-    public MetadataWriter(int blockSize, int fileSize, String dataFileDirectory) {
-        this.BLOCK_SIZE = blockSize;
-        this.FILE_SIZE = fileSize;
-        this.dataFileDirectory = dataFileDirectory;
-    }
+    public MetadataWriter() {}
 
-    public void write(String databaseName, int PFSFileNum, int blockSize, int kvTableCount) throws IOException {
-        DBRepository repo = new DBRepository(BLOCK_SIZE, FILE_SIZE, dataFileDirectory);
+    public void write(String databaseName, int PFSFileNum, int blockSize, int kvTableCount) {
+        DBRepository repo = new DBRepository();
         try {
             repo.write(databaseName, METADATA_PFS_FILE_NUM, DB_NAME_OFFSET, METADATA_BLOCK_NUM, databaseName);
             repo.write(databaseName, METADATA_PFS_FILE_NUM, DB_SIZE_OFFSET, METADATA_BLOCK_NUM, Integer.toString(FILE_SIZE));

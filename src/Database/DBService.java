@@ -22,15 +22,13 @@ public class DBService {
 
     public DBService(String databaseName) {
         this.PFSFileCount = 0;
-        this.dbRepository = new DBRepository(BLOCK_SIZE, FILE_SIZE, PFS_DIRECTORY);
+        this.dbRepository = new DBRepository();
         this.databaseName = databaseName;
     }
 
-    public void open() {};
-
     public void put(String TableName) {
         // TableName example: "movies-test.csv"
-        DBRepository repo = new DBRepository(BLOCK_SIZE, FILE_SIZE, PFS_DIRECTORY);
+        DBRepository repo = new DBRepository();
         File file = new File(TABLE_DIRECTORY + "/" + TableName);
         int PFSFileNum = 0;
         int blockNum;
