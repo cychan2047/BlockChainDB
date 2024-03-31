@@ -14,7 +14,7 @@ public class DBService {
     private int PFSFileCount;
     private DBRepository dbRepository;
     private static final String PFS_DIRECTORY = "./src/Database/PFSFiles";
-    private static final String TABLE_DIRECTORY = "./src/Database/KVTables";
+    private static final String TABLE_DIRECTORY = "./src/KVTables";
     private static final int METADATA_PFS_FILE_NUM = 0;
     private String databaseName;
 
