@@ -98,6 +98,7 @@ public class DBRepository {
         }
         return content.toString();
     }
+
     public void delete(int PFSFileCount) {
         String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         File file = new File(pathname);
@@ -107,4 +108,5 @@ public class DBRepository {
             System.out.println("Failed to delete the file.");
         }
     }
+
 }
