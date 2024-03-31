@@ -1,7 +1,6 @@
 package Database.DBUtil;
 
 public final class Constants {
-    public static final int BLOCK_NUM = 0;
     public static final int TABLE_NAME_OFFSET = 0;
     public static final int TABLE_SIZE_OFFSET = 50;
     public static final int TABLE_TIME_OFFSET = 60;
@@ -19,10 +18,8 @@ public final class Constants {
     public static final int PFS_FILE_COUNT_OFFSET = 60;
     public static final int BLOCK_SIZE_OFFSET = 70;
     public static final int KV_TABLE_COUNT = 80;
-    public static final String databaseDirectory = "./src/Database/PFSFiles";
-    public static final int FCBBlockNum = 0;
-    public static final int PFSFileNum = 0;
-
+    public static final String DATABASE_DIRECTORY = "./src/Database/PFSFiles";
+    public static final String TABLE_DIRECTORY = "./src/Database/KVTables";
     public static final int FSM_BLOCK_NUM = 9;
     public static final int FSM_BLOCK_OFFSET = 0;
     public static final int FSM_PFS_FILE_NUM = 0;

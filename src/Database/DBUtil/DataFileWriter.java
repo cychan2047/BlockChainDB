@@ -10,12 +10,18 @@ public class DataFileWriter {
     private DBRepository repo;
     private File tableFile;
 
-    public DataFileWriter(File tableFile) {
-        this.repo = new DBRepository();
-        this.tableFile = tableFile;
+    private FSMReaderWriter fsmReaderWriter;
+
+    public DataFileWriter(String tableName, String databaseName) {
+        this.tableFile = new File(TABLE_DIRECTORY + "/" + tableName);
+        this.repo = new DBRepository(databaseName);
+        this.fsmReaderWriter = new FSMReaderWriter(databaseName);
     }
 
-    // Read the data from the csv tableFile and write it into the
+    // Read the data from the csv tableFile and write it into the PFSFiles
+    public void write() {
+
+    }
 
 
 
