@@ -59,8 +59,7 @@ public class DBService {
         if (files != null) {
             for (File file : files) {
                 String databaseName = file.getName().split("\\.db")[0];
-                MetadataWriter metadataWriter = new MetadataWriter(BLOCK_SIZE, FILE_SIZE, PFS_DIRECTORY);
-                FCBWriter fcbWriter = new FCBWriter(BLOCK_SIZE, FILE_SIZE, PFS_DIRECTORY);
+
                 StringBuilder metadata = new StringBuilder();
                 StringBuilder fcbData = new StringBuilder();
 
@@ -71,8 +70,8 @@ public class DBService {
                     }
 
                     // Read file-specific data from the FCB_BLOCK_NUM
-                    for (int i = 0; i < fcbWriter.STARTING_DATA_BLOCK_OFFSET; i++) {
-                        fcbData.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, fcbWriter.FCB_BLOCK_NUM));
+                    for (int i = 0; i < FCBWriter.STARTING_DATA_BLOCK_OFFSET; i++) {
+                        fcbData.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, FCBWriter.FCB_BLOCK_NUM));
                     }
 
                     System.out.println("Metadata: " + metadata.toString());
@@ -92,7 +91,22 @@ public class DBService {
 
     public void putr(String pathname, String remark) {};
 
-    public void kill(String databaseName) {};
+    public void kill(String databaseName) {
+        File directory = new File(dbRepository.getCurrentPath());
+        File[] files = directory.listFiles((dir, name) -> name.startsWith(databaseName + ".db"));
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.delete()) {
+                    System.out.println("Deleted file: " + file.getName());
+                } else {
+                    System.out.println("Failed to delete file: " + file.getName());
+                }
+            }
+        } else {
+            System.out.println("No PFS files found for the database: " + databaseName);
+        }
+    }
 
     public void quit() {};
 
