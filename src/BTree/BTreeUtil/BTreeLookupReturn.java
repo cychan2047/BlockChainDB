@@ -1,4 +1,4 @@
-package InMemoryBTree;
+package BTree.BTreeUtil;
 
 // Result of a B-Tree lookup operation
 public class BTreeLookupReturn {

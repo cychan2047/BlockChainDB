@@ -1,4 +1,4 @@
-package InMemoryBTree;// Abstract class representing B-tree node
+package BTree.BTreeUtil;// Abstract class representing B-tree node
 import java.util.List;
 
 abstract public class BTreeNode {

@@ -6,8 +6,8 @@ public class main {
       
         DBController controller = new DBController();
         controller.startCLI();
-        DBRepository dbRepository = new DBRepository(256, 1024 * 1024, "./src/Database/PFSFiles");
-        dbRepository.createPFSFile(0, "test");
+        DBRepository dbRepository = new DBRepository("test");
+        dbRepository.createPFSFile(0);
         dbRepository.printTestFile("./src/Database/PFSFiles", "test.db0", "output.txt");
 
     }
