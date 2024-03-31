@@ -10,11 +10,11 @@ public class FCBWriter {
     private static final int TABLE_NAME_OFFSET = 0;
     private static final int TABLE_SIZE_OFFSET = 50;
     private static final int TABLE_TIME_OFFSET = 60;
-    private static final int STARTING_DATA_BLOCK_OFFSET = 80;
+    public static final int STARTING_DATA_BLOCK_OFFSET = 80;
     private static final int ROOT_INDEX_BLOCK_OFFSET = 90;
     private static final int USED_DATA_BLOCK_COUNT = 100;
     private static final int REMARK_OFFSET = 110;
-    private static final int FCB_BLOCK_NUM = 0;
+    public static final int FCB_BLOCK_NUM = 1;
     private final int BLOCK_SIZE;
     private final int FILE_SIZE;
     private final String dataFileDirectory;

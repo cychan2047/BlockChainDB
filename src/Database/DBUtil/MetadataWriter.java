@@ -10,10 +10,10 @@ public class MetadataWriter {
     private static final int DB_NAME_OFFSET = 0;
     private static final int DB_SIZE_OFFSET = 50;
     private static final int PFS_FILE_COUNT_OFFSET = 60;
-    private static final int BLOCK_SIZE_OFFSET = 70;
+    public static final int BLOCK_SIZE_OFFSET = 70;
     private static final int KV_TABLE_COUNT = 80;
     private static final int METADATA_PFS_FILE_NUM = 0;
-    private static final int METADATA_BLOCK_NUM = 0;
+    public static final int METADATA_BLOCK_NUM = 0;
     private final int BLOCK_SIZE;
     private final int FILE_SIZE;
     private final String dataFileDirectory;
