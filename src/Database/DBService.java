@@ -2,6 +2,7 @@ package Database;
 
 import Database.DBUtil.FCBWriter;
 import Database.DBUtil.MetadataWriter;
+import Database.DBUtil.Constants;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -52,7 +53,7 @@ public class DBService {
     public void rm(String tableName) {};
 
     public void dir() {
-        File directory = new File(dbRepository.getCurrentPath());
+        File directory = new File(PFS_DIRECTORY);
         File[] files = directory.listFiles((dir, name) -> name.endsWith(".db"));
 
         if (files != null) {
@@ -64,13 +65,13 @@ public class DBService {
 
                 try {
                     // Read metadata from the METADATA_BLOCK_NUM
-                    for (int i = 0; i < MetadataWriter.BLOCK_SIZE_OFFSET; i++) {
-                        metadata.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, MetadataWriter.METADATA_BLOCK_NUM));
+                    for (int i = 0; i < Constants.BLOCK_SIZE_OFFSET; i++) {
+                        metadata.append(dbRepository.readChar(Constants.METADATA_PFS_FILE_NUM, i, Constants.METADATA_BLOCK_NUM));
                     }
 
                     // Read file-specific data from the FCB_BLOCK_NUM
-                    for (int i = 0; i < FCBWriter.STARTING_DATA_BLOCK_OFFSET; i++) {
-                        fcbData.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, FCBWriter.FCB_BLOCK_NUM));
+                    for (int i = 0; i < Constants.STARTING_DATA_BLOCK_OFFSET; i++) {
+                        fcbData.append(dbRepository.readChar(Constants.METADATA_PFS_FILE_NUM, i, Constants.FCB_BLOCK_NUM));
                     }
 
                     System.out.println("Metadata: " + metadata.toString());
@@ -92,7 +93,7 @@ public class DBService {
     public void putr(String pathname, String remark) {};
 
     public void kill(String databaseName) {
-        File directory = new File(dbRepository.getCurrentPath());
+        File directory = new File(PFS_DIRECTORY);
         File[] files = directory.listFiles((dir, name) -> name.startsWith(databaseName + ".db"));
 
         if (files != null) {
