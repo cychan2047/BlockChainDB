@@ -8,7 +8,7 @@ public final class Constants {
     public static final int ROOT_INDEX_BLOCK_OFFSET = 90;
     public static final int USED_DATA_BLOCK_COUNT = 100;
     public static final int REMARK_OFFSET = 110;
-    public static final int FCB_BLOCK_NUM = 0;
+    public static final int FCB_BLOCK_NUM = 1;
     public static final int BLOCK_SIZE = 256;
     public static final int FILE_SIZE = 1024 * 1024;
     public static final int METADATA_PFS_FILE_NUM = 0;
@@ -23,4 +23,21 @@ public final class Constants {
     public static final int FSM_BLOCK_NUM = 9;
     public static final int FSM_BLOCK_OFFSET = 0;
     public static final int FSM_PFS_FILE_NUM = 0;
+    public static final int RECORD_SIZE = 60;
+    public static final int BLOCK_NUM_PER_FILE = FILE_SIZE / BLOCK_SIZE;
+    public static final int RECORD_SLOT_OFFSET = 246;
+    public static final int RECORD_SLOT_SIZE = BLOCK_SIZE / RECORD_SIZE;
+    public static final int NEXT_BLOCK_NUM_OFFSET = 250;
+    public static final int FILE_TYPE_MARKER_OFFSET = 255;
+    public static final String METADATA_MARKER = "M";
+    public static final String FCB_MARKER = "C";
+    public static final String FSM_MARKER = "S";
+    public static final String DATA_MARKER = "D";
+    public static final String INDEX_MARKER = "I";
+    public static final String END_OF_FILE = "EOF";
+    public static final String NULL_NODE_NUM = "99999";
+    public static final int BLOCK_NUM_LENGTH = 5;
+    public static final int KEY_LENGTH = 8;
+    public static final int NUM_OF_RECORDS = BLOCK_SIZE / RECORD_SIZE;
+
 }

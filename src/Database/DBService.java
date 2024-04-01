@@ -1,6 +1,6 @@
 package Database;
 
-import Database.DBUtil.FCBWriter;
+import Database.DBUtil.FCBReaderWriter;
 import Database.DBUtil.MetadataWriter;
 
 import java.io.BufferedReader;
@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Logger;
+import static Database.DBUtil.Constants.*;
 
 
 public class DBService {
@@ -64,13 +65,13 @@ public class DBService {
 
                 try {
                     // Read metadata from the METADATA_BLOCK_NUM
-                    for (int i = 0; i < MetadataWriter.BLOCK_SIZE_OFFSET; i++) {
-                        metadata.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, MetadataWriter.METADATA_BLOCK_NUM));
+                    for (int i = 0; i < BLOCK_SIZE_OFFSET; i++) {
+                        metadata.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, METADATA_BLOCK_NUM));
                     }
 
                     // Read file-specific data from the FCB_BLOCK_NUM
-                    for (int i = 0; i < FCBWriter.STARTING_DATA_BLOCK_OFFSET; i++) {
-                        fcbData.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, FCBWriter.FCB_BLOCK_NUM));
+                    for (int i = 0; i < STARTING_DATA_BLOCK_OFFSET; i++) {
+                        fcbData.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, FCB_BLOCK_NUM));
                     }
 
                     System.out.println("Metadata: " + metadata.toString());
@@ -84,12 +85,7 @@ public class DBService {
         }
     }
 
-
-
-
     public void find(String tableName, int key) {};
-
-    public void putr(String pathname, String remark) {};
 
     public void kill(String databaseName) {
         File directory = new File(dbRepository.getCurrentPath());

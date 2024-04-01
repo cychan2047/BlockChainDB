@@ -2,6 +2,7 @@ package Database.DBUtil;
 
 import Database.DBRepository;
 import java.io.IOException;
+import java.util.*;
 import java.util.logging.Logger;
 import static Database.DBUtil.Constants.*;
 
@@ -11,8 +12,13 @@ public class FSMReaderWriter {
     private static final String INITIAL_BITMAP = "0".repeat(BLOCK_SIZE);
 
     private String databaseName;
+    private int currentIndex = 0;
+    private Queue<Integer> freeBlocksBuffer;
+
     public FSMReaderWriter(String databaseName) {
         this.databaseName = databaseName;
+        this.currentIndex = 0;
+        this.freeBlocksBuffer = new LinkedList<>();
     }
 
     public void initialize() {
@@ -39,6 +45,7 @@ public class FSMReaderWriter {
     }
 
     public void setAvailability(int blockNum, boolean available) {
+        // TODO: Handle the case when there are multiple PFSFiles
         try {
             DBRepository repo = new DBRepository(databaseName);
             String hex = repo.readChar(FSM_PFS_FILE_NUM, blockNum / 4, FSM_BLOCK_NUM);
@@ -53,23 +60,32 @@ public class FSMReaderWriter {
         }
     }
 
-    public int getFirstAvailableBlock() {
+    public int getNextAvailableBlock() {
         DBRepository repo = new DBRepository(databaseName);
-        for (int i = 0; i < BLOCK_SIZE; i++) {
+        do {
+            if (!freeBlocksBuffer.isEmpty()) {
+                return freeBlocksBuffer.poll();
+            }
             try {
-                String hex = repo.readChar(FSM_PFS_FILE_NUM, i, FSM_BLOCK_NUM);
-                if (hex.equals("F")) continue;
+                String hex = repo.readChar(FSM_PFS_FILE_NUM, currentIndex / 4, FSM_BLOCK_NUM);
+                if (hex.equals("F")) {
+                    currentIndex += 4;
+                    continue;
+                }
                 int decimal = Integer.parseInt(hex, 16);
                 String binary = Integer.toBinaryString(decimal);
-                for (int j = 0; j < 4; j++) {
-                    if (binary.charAt(j) == '0') {
-                        return i * 4 + j;
+                for (int i = currentIndex % 4; i < 4; i++) {
+                    if (binary.charAt(i) == '0') {
+                        int blockNum = currentIndex + i;
+                        setAvailability(blockNum, false);
+                        return blockNum;
                     }
                 }
+                currentIndex += 4;
             } catch (IOException e) {
                 Logger.getLogger(FSMReaderWriter.class.getName()).severe(e.getMessage());
             }
-        }
+        } while (currentIndex < FILE_SIZE / BLOCK_SIZE);
         return -1;
     }
 }
