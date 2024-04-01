@@ -72,27 +72,21 @@ public class DBRepository {
     }
 
     public String readBlock(int PFSFileCount, int offset, int blockNum) throws IOException {
-        String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
-        StringBuilder content = new StringBuilder();
-
-        try (RandomAccessFile file = new RandomAccessFile(pathname, "r")) {
-            file.seek(offset + blockNum * BLOCK_SIZE);
-            for (int i = 0; i < BLOCK_SIZE; i++) {
-                content.append(file.readChar());
-            }
-        } catch (IOException e) {
-            Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
-        }
-
-        return content.toString();
+        return read(PFSFileCount, offset, blockNum, BLOCK_SIZE);
     }
 
     public String readChar(int PFSFileCount, int offset, int blockNum) throws IOException {
+        return read(PFSFileCount, offset, blockNum, 1);
+    }
+
+    public String read(int PFSFileCount, int offset, int blockNum, int length) throws IOException {
         String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         StringBuilder content = new StringBuilder();
         try (RandomAccessFile file = new RandomAccessFile(pathname, "r")) {
             file.seek(offset + blockNum * BLOCK_SIZE);
-            content.append(file.readChar());
+            for (int i = 0; i < length; i++) {
+                content.append(file.readChar());
+            }
         } catch (IOException e) {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
