@@ -15,6 +15,7 @@ public class DBRepository {
 
     // Directory: the relative path from the root directory
     //     Example: "./src/Database/PFSFiles"
+    // Creates a PFS file and initializes it with empty blocks
     public void createPFSFile(int PFSFileCount) {
         // Create a new file
         String name = databaseName + ".db" + PFSFileCount;
@@ -30,7 +31,7 @@ public class DBRepository {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
 
-        // Initialize the file
+        // Fill the file with empty blocks to initialize it
         int numBlocks = FILE_SIZE / BLOCK_SIZE;
         char[] blockContent = new char[BLOCK_SIZE];
         Arrays.fill(blockContent, ' ');
@@ -43,6 +44,7 @@ public class DBRepository {
         }
     }
 
+    // Prints the contents of a test file
     public void printTestFile(String directory, String inputTestFile, String outputTestFile) {
         try (BufferedReader reader = new BufferedReader(new FileReader(directory + "/" + inputTestFile));
              FileWriter writer = new FileWriter(directory + "/" + outputTestFile)) {
@@ -56,6 +58,8 @@ public class DBRepository {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
     }
+
+    // Writes a string to a specific block in a PFS file
     public void write(int PFSFileNum, int offset, int blockNum, String content) throws IOException, IllegalArgumentException {
         String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileNum;
 
@@ -71,10 +75,12 @@ public class DBRepository {
         }
     }
 
+    // Reads a specific block from a PFS file
     public String readBlock(int PFSFileCount, int offset, int blockNum) throws IOException {
         return read(PFSFileCount, offset, blockNum, BLOCK_SIZE);
     }
 
+    // Reads a single character from a specific location in a PFS file
     public String readChar(int PFSFileCount, int offset, int blockNum) throws IOException {
         return read(PFSFileCount, offset, blockNum, 1);
     }
@@ -93,6 +99,7 @@ public class DBRepository {
         return content.toString();
     }
 
+    // Deletes a PFS file
     public void delete(int PFSFileCount) {
         String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         File file = new File(pathname);

@@ -1,6 +1,7 @@
 package Database.DBUtil;
 
 public final class Constants {
+    // Offsets for FCB data
     public static final int TABLE_NAME_OFFSET = 0;
     public static final int TABLE_SIZE_OFFSET = 50;
     public static final int TABLE_TIME_OFFSET = 60;
@@ -9,8 +10,12 @@ public final class Constants {
     public static final int USED_DATA_BLOCK_COUNT = 100;
     public static final int REMARK_OFFSET = 110;
     public static final int FCB_BLOCK_NUM = 1;
+
+    // Offsets for database information
     public static final int BLOCK_SIZE = 256;
     public static final int FILE_SIZE = 1024 * 1024;
+
+    // Offsets for metadata
     public static final int METADATA_PFS_FILE_NUM = 0;
     public static final int METADATA_BLOCK_NUM = 0;
     public static final int DB_NAME_OFFSET = 0;
@@ -18,17 +23,25 @@ public final class Constants {
     public static final int PFS_FILE_COUNT_OFFSET = 60;
     public static final int BLOCK_SIZE_OFFSET = 70;
     public static final int KV_TABLE_COUNT = 80;
+
+    // Directory paths
     public static final String DATABASE_DIRECTORY = "./src/Database/PFSFiles";
     public static final String TABLE_DIRECTORY = "./src/Database/KVTables";
+
+    // FSM (Free Space Management) constants
     public static final int FSM_BLOCK_NUM = 9;
     public static final int FSM_BLOCK_OFFSET = 0;
     public static final int FSM_PFS_FILE_NUM = 0;
+
+    // Record and block management
     public static final int RECORD_SIZE = 60;
     public static final int BLOCK_NUM_PER_FILE = FILE_SIZE / BLOCK_SIZE;
     public static final int RECORD_SLOT_OFFSET = 246;
     public static final int RECORD_SLOT_SIZE = BLOCK_SIZE / RECORD_SIZE;
     public static final int NEXT_BLOCK_NUM_OFFSET = 250;
     public static final int FILE_TYPE_MARKER_OFFSET = 255;
+
+    // Markers for identifying the type of data in a block
     public static final String METADATA_MARKER = "M";
     public static final String FCB_MARKER = "C";
     public static final String FSM_MARKER = "S";
@@ -36,6 +49,8 @@ public final class Constants {
     public static final String INDEX_MARKER = "I";
     public static final String END_OF_FILE = "EOF";
     public static final String NULL_NODE_NUM = "99999";
+
+    // Offsets for the B-tree Index Block
     public static final int BLOCK_NUM_LENGTH = 5;
     public static final int KEY_LENGTH = 8;
     public static final int NUM_OF_RECORDS = BLOCK_SIZE / RECORD_SIZE;
