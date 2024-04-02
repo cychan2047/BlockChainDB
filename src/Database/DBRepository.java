@@ -1,13 +1,15 @@
 package Database;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets.*;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import static Database.DBUtil.Constants.*;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DBRepository {
 
-    private String databaseName;
+    private final String databaseName;
 
     public DBRepository(String databaseName) {
         this.databaseName = databaseName;
@@ -45,19 +47,6 @@ public class DBRepository {
     }
 
     // Prints the contents of a test file
-    public void printTestFile(String directory, String inputTestFile, String outputTestFile) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(directory + "/" + inputTestFile));
-             FileWriter writer = new FileWriter(directory + "/" + outputTestFile)) {
-            char[] buffer = new char[BLOCK_SIZE];
-            int bytesRead;
-            while ((bytesRead = reader.read(buffer)) != -1) {
-                writer.write(buffer, 0, bytesRead);
-                writer.write('\n'); // Write a newline character after each buffer
-            }
-        } catch (IOException e) {
-            Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
-        }
-    }
 
     // Writes a string to a specific block in a PFS file
     public void write(int PFSFileNum, int offset, int blockNum, String content) throws IOException, IllegalArgumentException {
@@ -68,8 +57,9 @@ public class DBRepository {
         }
 
         try (RandomAccessFile file = new RandomAccessFile(pathname, "rw")) {
-            file.seek(offset + blockNum * BLOCK_SIZE);
-            file.writeChars(content);
+            System.out.println("offest: " + offset + " blockNum: " + blockNum + " block size: " + BLOCK_SIZE + " content: " + content);
+            file.seek(offset + (long) blockNum * BLOCK_SIZE);
+            file.writeBytes(content);
         } catch (IOException e) {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
@@ -89,10 +79,10 @@ public class DBRepository {
         String pathname = DATABASE_DIRECTORY + "/" + databaseName + ".db" + PFSFileCount;
         StringBuilder content = new StringBuilder();
         try (RandomAccessFile file = new RandomAccessFile(pathname, "r")) {
-            file.seek(offset + blockNum * BLOCK_SIZE);
-            for (int i = 0; i < length; i++) {
-                content.append(file.readChar());
-            }
+            file.seek(offset + (long) blockNum * BLOCK_SIZE);
+            byte[] buffer = new byte[length];
+            int bytesRead = file.read(buffer, 0, length);
+            content.append(new String(buffer, 0, bytesRead, UTF_8));
         } catch (IOException e) {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }

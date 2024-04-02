@@ -1,5 +1,9 @@
 package Database;
 
+import Database.DBUtil.DataIndexFileWriter;
+import Database.DBUtil.FSMReaderWriter;
+import Database.DBUtil.MetadataWriter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -20,21 +24,19 @@ public class DBService {
         this.databaseName = databaseName;
     }
 
+    public void create() {
+        // Creates a new database file
+        dbRepository.createPFSFile(PFSFileCount);
+        MetadataWriter metadataWriter = new MetadataWriter(databaseName);
+        metadataWriter.write(1, 0);
+        FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
+        fsmReaderWriter.initialize(0);
+    }
 
-    public void put(String TableName) {
+    public void put(String tableName) {
         // TableName example: "movies-test.csv"
-        DBRepository repo = new DBRepository(databaseName);
-        File file = new File(TABLE_DIRECTORY + "/" + TableName);
-        int PFSFileNum = 0;
-        int blockNum;
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                //TODO: Implement the logic to write the data to the database
-            }
-        } catch (IOException e) {
-            Logger.getLogger(DBService.class.getName()).severe(e.getMessage());
-        }
+        DataIndexFileWriter writer = new DataIndexFileWriter(tableName, databaseName);
+        writer.writeDataFile(tableName);
     };
 
     public void get(String OSPath, String tableName) {};
