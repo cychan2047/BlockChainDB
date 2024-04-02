@@ -60,14 +60,6 @@ public class DBController {
                     int key = Integer.parseInt(argument.substring(lastDotIndex + 1));
                     dbService.find(tableName, key);
                     break;
-                case "putr":
-                    String[] partsArgument = argument.split("\\s+", 2);
-                    if (partsArgument.length != 2) {
-                        System.out.println("Invalid command: putr requires two arguments");
-                        break;
-                    }
-                    dbService.putr(partsArgument[0], partsArgument[1]);
-                    break;
                 case "kill":
                     dbService.kill(argument);
                     break;
