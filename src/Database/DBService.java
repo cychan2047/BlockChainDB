@@ -53,7 +53,7 @@ public class DBService {
     public void rm(String tableName) {};
 
     public void dir() {
-        File directory = new File(dbRepository.getCurrentPath());
+        File directory = new File(PFS_DIRECTORY);
         File[] files = directory.listFiles((dir, name) -> name.endsWith(".db"));
 
         if (files != null) {
@@ -66,13 +66,16 @@ public class DBService {
                 try {
                     // Read metadata from the METADATA_BLOCK_NUM
                     for (int i = 0; i < BLOCK_SIZE_OFFSET; i++) {
-                        metadata.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, METADATA_BLOCK_NUM));
+                        metadata.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, i, METADATA_BLOCK_NUM));
                     }
 
                     // Read file-specific data from the FCB_BLOCK_NUM
-                    for (int i = 0; i < STARTING_DATA_BLOCK_OFFSET; i++) {
-                        fcbData.append(dbRepository.readChar(databaseName, METADATA_PFS_FILE_NUM, i, FCB_BLOCK_NUM));
+                    for (int i = FCB_BLOCK_NUM; i < FSM_BLOCK_NUM; i++) {
+                        for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
+                            fcbData.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, j, i));
+                        }
                     }
+
 
                     System.out.println("Metadata: " + metadata.toString());
                     System.out.println("FCB Data: " + fcbData.toString());
@@ -88,7 +91,7 @@ public class DBService {
     public void find(String tableName, int key) {};
 
     public void kill(String databaseName) {
-        File directory = new File(dbRepository.getCurrentPath());
+        File directory = new File(PFS_DIRECTORY);
         File[] files = directory.listFiles((dir, name) -> name.startsWith(databaseName + ".db"));
 
         if (files != null) {
