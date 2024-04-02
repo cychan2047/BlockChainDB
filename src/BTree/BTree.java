@@ -5,6 +5,8 @@ import BTree.BTreeUtil.BTreeNode;
 import BTree.BTreeUtil.InternalNode;
 import BTree.BTreeUtil.LeafNode;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 // B-Tree data structure
@@ -29,10 +31,20 @@ public class BTree {
     private final int MAX_KEYS = 2 * t - 1;
     // Minimum keys in a node
     private final int MIN_KEYS = t - 1;
+    private int nodeCount;
+
+    private HashMap<BTreeNode, BTreeNode> nodeToParent;
+
+    private HashMap<Integer, Integer> keyBlock;
 
     // Constructor
     public BTree() {
         root = new LeafNode();
+        nodeCount = 0;
+        nodeCount++;
+        nodeToParent = new HashMap<>();
+        nodeToParent.put(root, null);
+        keyBlock = new HashMap<>();
     }
 
     public BTreeNode getRoot() {
@@ -74,6 +86,17 @@ public class BTree {
         parent.getChildren().remove(index);
         parent.getChildren().add(index, left);
         parent.getChildren().add(index + 1, right);
+
+        // Updating the node count
+        nodeToParent.remove(prev);
+        nodeToParent.put(left, parent);
+        nodeToParent.put(right, parent);
+    }
+
+    // Insert a value into the B-Tree and store the block number
+    public void insert(int value, int block) {
+        insert(value);
+        keyBlock.put(value, block);
     }
 
     // Insert a value into the B-Tree
@@ -86,6 +109,7 @@ public class BTree {
             s.getChildren().add(r);
             split(s, 0);
             insertNonFull(s, value);
+            nodeToParent.put(r, s);
         } else {
             // Insert into non-full root
             insertNonFull(r, value);
@@ -147,31 +171,11 @@ public class BTree {
         }
     }
 
-    // Display the B-Tree
-    public void display() {
-        display(root);
+    public HashSet<BTreeNode> getNodes() {
+        return new HashSet<>(nodeToParent.keySet());
     }
 
-    // Display the tree at given node
-    public void display(BTreeNode node) {
-        display(node, 0);
-    }
-
-    // Displays the B-Tree recursively with indentation based on the level
-    private void display(BTreeNode node, int level) {
-        List<Integer> keys = node.getKeys();
-        if (!node.isLeaf()) {
-            List<BTreeNode> children = ((InternalNode) node).getChildren();
-            for (int i = 0; i < children.size(); i++) {
-                display(children.get(i), level + 1);
-                if (i < keys.size()) {
-                    System.out.println("    ".repeat(level) + keys.get(i));
-                }
-            }
-        } else {
-            for (Integer key : keys) {
-                System.out.println("    ".repeat(level) + key);
-            }
-        }
+    public HashMap<Integer, Integer> getKeyBlock() {
+        return keyBlock;
     }
 }
