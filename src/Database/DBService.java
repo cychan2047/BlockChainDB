@@ -1,8 +1,5 @@
 package Database;
 
-import Database.DBUtil.FCBReaderWriter;
-import Database.DBUtil.MetadataWriter;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -14,17 +11,9 @@ import static Database.DBUtil.Constants.*;
 public class DBService {
     private int PFSFileCount;
     private DBRepository dbRepository;
-    private static final String PFS_DIRECTORY = "./src/Database/PFSFiles";
-    private static final String TABLE_DIRECTORY = "./src/KVTables";
-    private static final int METADATA_PFS_FILE_NUM = 0;
     private String databaseName;
 
-    private static final int BLOCK_SIZE = 256;
-
-    private static final int FILE_SIZE = 1024 * 1024;
-
-
-
+    // Constructor: Initializes the DBService with a specific database name
     public DBService(String databaseName) {
         this.PFSFileCount = 0;
         this.dbRepository = new DBRepository(databaseName);
@@ -53,7 +42,8 @@ public class DBService {
     public void rm(String tableName) {};
 
     public void dir() {
-        File directory = new File(PFS_DIRECTORY);
+        // Lists all the metadata and FCB info
+        File directory = new File(DATABASE_DIRECTORY);
         File[] files = directory.listFiles((dir, name) -> name.endsWith(".db"));
 
         if (files != null) {
@@ -71,9 +61,15 @@ public class DBService {
 
                     // Read file-specific data from the FCB_BLOCK_NUM
                     for (int i = FCB_BLOCK_NUM; i < FSM_BLOCK_NUM; i++) {
-                        for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
-                            fcbData.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, j, i));
+                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, i, FCB_BLOCK_NUM).equals("")) {
+                            break;
+                        } else {
+                            for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
+                                fcbData.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, j, i));
+                            }
+                            fcbData.append("\n");
                         }
+
                     }
 
 
@@ -91,7 +87,8 @@ public class DBService {
     public void find(String tableName, int key) {};
 
     public void kill(String databaseName) {
-        File directory = new File(PFS_DIRECTORY);
+        // Deletes all files related to a specific database
+        File directory = new File(DATABASE_DIRECTORY);
         File[] files = directory.listFiles((dir, name) -> name.startsWith(databaseName + ".db"));
 
         if (files != null) {

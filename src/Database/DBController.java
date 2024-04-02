@@ -20,23 +20,23 @@ public class DBController {
         String command;
         do {
             System.out.println("NoSQL>");
-            command = scanner.nextLine().trim();
-            processCommand(command);
-        } while (!command.equalsIgnoreCase("quit"));
-        System.out.println("Exiting NoSQL...");
+            command = scanner.nextLine().trim(); // Reads and trims user input
+            processCommand(command); // Processes the command
+        } while (!command.equalsIgnoreCase("quit")); // Continues until 'quit' is entered
     }
 
     // Processes a command entered by the user
     private void processCommand(String command) {
-        String[] parts = command.split("\\s+", 2);
+        String[] parts = command.split("\\s+", 2); // Splits the command into parts
         if (parts.length == 0) {
-            return;
+            return; // !!! Should never happen due to the nature of split, might be redundant
         }
-        String action = parts[0].toLowerCase();
+        String action = parts[0].toLowerCase(); // Gets the command action
         String argument = parts.length > 1 ? parts[1] : "";
 
+        // Handles different commands
         if (action.equals("open")) {
-            dbService = new DBService(argument);
+            dbService = new DBService(argument);  // Initializes DBService with the database name
             System.out.println("Database " + argument + " opened.");
         } else if (dbService == null) {
             System.out.println("No database is currently open. Please open a database first.");
