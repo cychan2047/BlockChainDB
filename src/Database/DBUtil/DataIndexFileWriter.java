@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.logging.Logger;
 
 import BTree.BTree;
@@ -25,14 +24,12 @@ import static Database.DBUtil.Constants.*;
 public class DataIndexFileWriter {
 
     private DBRepository repo;
-    private File tableFile;
 
     private FSMReaderWriter fsmReaderWriter;
 
     private BTree bTree;
 
     public DataIndexFileWriter(String tableName, String databaseName) {
-        this.tableFile = new File(TABLE_DIRECTORY + "/" + tableName);
         this.repo = new DBRepository(databaseName);
         this.fsmReaderWriter = new FSMReaderWriter(databaseName);
         this.bTree = new BTree();
@@ -43,33 +40,45 @@ public class DataIndexFileWriter {
 
     // Write the entire table into the block
     public void writeDataFile(String tableName) {
+        File tableFile = new File(TABLE_DIRECTORY + "/" + tableName);
         try (BufferedReader reader = new BufferedReader(new FileReader(tableFile))) {
-            int blockNum;
+            List<Integer> blockNums = new ArrayList<>();
+            int blockNum = -1;
             int currentBlockNum;
             int PFSFileNum = 0;
             int slotNum;
-            int lastBlockNum = -1;
             String line;
+            Queue<Integer> slotNums = new LinkedList<>();
             while ((line = reader.readLine()) != null) {
                 if (line.length() > RECORD_SIZE) {
                     line = line.substring(0, RECORD_SIZE);
                 }
-                blockNum = fsmReaderWriter.getNextAvailableBlock();
+                if (slotNums.isEmpty()) {
+                    blockNum = fsmReaderWriter.getNextAvailableBlock();
+                    System.out.println("next available block: " + blockNum);
+                    blockNums.add(blockNum);
+                    slotNums = new LinkedList<>(Arrays.asList(0, 1, 2, 3));
+                }
+                slotNum = slotNums.poll();
                 currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
                 PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
-                slotNum = getAvailableSlot(blockNum);
                 if (repo.readChar(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum).equals(" ")) {
                     initializeDataFile(blockNum);
                 }
+                System.out.println("slotNum: " + slotNum);
                 writeDataRecord(line, blockNum, slotNum);
-                if (lastBlockNum != blockNum) {
-                    writeNextBlockNum(lastBlockNum, blockNum);
-                    lastBlockNum = blockNum;
-                }
                 int id = getRecordId(line);
                 bTree.insert(id, blockNum);
+                System.out.println("blockNums: " + blockNums);
             }
-            repo.write(PFSFileNum, 250, lastBlockNum % BLOCK_NUM_PER_FILE, END_OF_FILE);
+            int lastBlockNum = blockNums.get(blockNums.size() - 1);
+            for (int i = 0; i < blockNums.size(); i++) {
+                if (i != blockNums.size() - 1) {
+                    writeNextBlockNum(blockNums.get(i), blockNums.get(i + 1));
+                } else {
+                    repo.write(PFSFileNum, NEXT_BLOCK_NUM_OFFSET, lastBlockNum % BLOCK_NUM_PER_FILE, END_OF_FILE);
+                }
+            }
             fsmReaderWriter.setAvailability(lastBlockNum, false);
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
@@ -156,7 +165,6 @@ public class DataIndexFileWriter {
             int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
             int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
             repo.write(PFSFileNum, 246, currentBlockNum, "0000");
-            repo.write(PFSFileNum, 250, currentBlockNum, blockNumTo5Digits(blockNum));
             repo.write(PFSFileNum, 255, currentBlockNum, DATA_MARKER);
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
