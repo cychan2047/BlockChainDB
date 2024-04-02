@@ -26,7 +26,7 @@ public final class Constants {
 
     // Directory paths
     public static final String DATABASE_DIRECTORY = "./src/Database/PFSFiles";
-    public static final String TABLE_DIRECTORY = "./src/Database/KVTables";
+    public static final String TABLE_DIRECTORY = "./src/KVTables";
 
     // FSM (Free Space Management) constants
     public static final int FSM_BLOCK_NUM = 9;
@@ -42,11 +42,10 @@ public final class Constants {
     public static final int FILE_TYPE_MARKER_OFFSET = 255;
 
     // Markers for identifying the type of data in a block
-    public static final String METADATA_MARKER = "M";
-    public static final String FCB_MARKER = "C";
-    public static final String FSM_MARKER = "S";
-    public static final String DATA_MARKER = "D";
-    public static final String INDEX_MARKER = "I";
+    public static final String METADATA_MARKER = "M"; // Metadata
+    public static final String FCB_MARKER = "T"; // Table
+    public static final String DATA_MARKER = "R"; // Record
+    public static final String INDEX_MARKER = "I"; // Index
     public static final String END_OF_FILE = "EOF";
     public static final String NULL_NODE_NUM = "99999";
 

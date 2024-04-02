@@ -57,7 +57,7 @@ public class DBRepository {
         }
 
         try (RandomAccessFile file = new RandomAccessFile(pathname, "rw")) {
-            System.out.println("offest: " + offset + " blockNum: " + blockNum + " block size: " + BLOCK_SIZE + " content: " + content);
+            System.out.println("offest: " + offset + " blockNum: " + blockNum + " content: " + content);
             file.seek(offset + (long) blockNum * BLOCK_SIZE);
             file.writeBytes(content);
         } catch (IOException e) {
