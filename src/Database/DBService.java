@@ -46,7 +46,7 @@ public class DBService {
     public void dir() {
         // Lists all the metadata and FCB info
         File directory = new File(DATABASE_DIRECTORY);
-        File[] files = directory.listFiles((dir, name) -> name.endsWith(".db"));
+        File[] files = directory.listFiles((dir, name) -> name.endsWith(".db0"));
 
         if (files != null) {
             for (File file : files) {
@@ -106,6 +106,7 @@ public class DBService {
         }
     }
 
-    public void quit() {};
-
+    public void quit() {
+        System.out.println("Closing the database and exiting.");
+    }
 }

@@ -10,9 +10,18 @@ public class main {
 
     public static void main(String[] args) {
        // testCreate();
-        testPut();
+        //testPut();
+        testDBController();
     }
 
+    public static void testDBController() {
+        // Initialize the DBController
+        DBController dbController = new DBController();
+
+        // Start the CLI with the simulated input
+        dbController.startCLI();
+
+    }
     public static void testPut() {
         System.out.println(System.getProperty("file.encoding"));
         String databaseName = "test_group1";

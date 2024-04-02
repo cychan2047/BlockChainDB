@@ -19,7 +19,7 @@ public class DBController {
     public void startCLI() {
         String command;
         do {
-            System.out.println("NoSQL>");
+            System.out.print("NoSQL>"); // Display the prompt on the same line as input
             command = scanner.nextLine().trim(); // Reads and trims user input
             processCommand(command); // Processes the command
         } while (!command.equalsIgnoreCase("quit")); // Continues until 'quit' is entered
@@ -37,6 +37,7 @@ public class DBController {
         // Handles different commands
         if (action.equals("open")) {
             dbService = new DBService(argument);  // Initializes DBService with the database name
+            dbService.create(); // Creates the database
             System.out.println("Database " + argument + " opened.");
         } else if (dbService == null) {
             System.out.println("No database is currently open. Please open a database first.");
