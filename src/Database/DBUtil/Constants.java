@@ -8,7 +8,6 @@ public final class Constants {
     public static final int STARTING_DATA_BLOCK_OFFSET = 80;
     public static final int ROOT_INDEX_BLOCK_OFFSET = 90;
     public static final int ENDING_DATA_BLOCK_OFFSET = 100;
-    public static final int FCB_BLOCK_NUM = 1;
 
     // Offsets for database information
     public static final int BLOCK_SIZE = 256;

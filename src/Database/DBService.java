@@ -1,14 +1,11 @@
 package Database;
 
-import Database.DBUtil.DataIndexFileWriter;
-import Database.DBUtil.FCBReaderWriter;
-import Database.DBUtil.FSMReaderWriter;
-import Database.DBUtil.MetadataReaderWriter;
+import Database.DBUtil.*;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.logging.Logger;
 import static Database.DBUtil.Constants.*;
+import static Database.DBUtil.StringUtils.removeTrailingSpaces;
 
 
 public class DBService {
@@ -49,11 +46,41 @@ public class DBService {
         MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
         int kvTableCount = metadataReaderWriter.getKVTableCount();
         metadataReaderWriter.write(1, kvTableCount + 1);
+        writer.getBTree().display();
     };
 
-    public void get(String OSPath, String tableName) {};
+    public void get(String OSPath, String tableName) {
+        File file = new File(OSPath, tableName);
+        FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            int blockNum = fcbReaderWriter.getStartingBlockNumByTableName(tableName);
+            do {
+                int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
+                int currentFileNum = blockNum / BLOCK_NUM_PER_FILE;
+                for (int slot = 0; slot < NUM_OF_RECORDS; slot++) {
+                    boolean hasData = dbRepository.readChar(currentFileNum,
+                            RECORD_SLOT_OFFSET + slot,
+                            currentBlockNum).equals("1");
+                    if (!hasData) continue;
+                    String record = dbRepository.read(currentFileNum, slot * RECORD_SIZE, currentBlockNum, RECORD_SIZE);
+                    writer.write(removeTrailingSpaces(record));
+                    writer.newLine();
+                }
+                String nextBlock = dbRepository.read(currentFileNum, NEXT_BLOCK_NUM_OFFSET, currentBlockNum, BLOCK_NUM_LENGTH);
+                if (nextBlock.equals("EOF  ")) break;
+                blockNum = Integer.parseInt(nextBlock);
+            } while (true);
+        } catch (IOException e) {
+            Logger.getLogger(DBService.class.getName()).severe("Error writing to file: " + e.getMessage());
+        }
+    };
 
-    public void rm(String tableName) {};
+    public void rm(String tableName) {
+        // Remove a table by traversing the index tree
+        FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+        DataIndexFileRemover remover = new DataIndexFileRemover(databaseName, tableName);
+        remover.remove();
+    };
 
     public void dir() {
         // Lists all the metadata and FCB info
@@ -74,8 +101,8 @@ public class DBService {
                     }
 
                     // Read file-specific data from the FCB_BLOCK_NUM
-                    for (int i = FCB_BLOCK_NUM; i < FSM_BLOCK_NUM; i++) {
-                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, i, FCB_BLOCK_NUM).equals("")) {
+                    for (int i = Constants.STARTING_FCB_NUM; i < FSM_BLOCK_NUM; i++) {
+                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, i, Constants.STARTING_FCB_NUM).equals("")) {
                             break;
                         } else {
                             for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
@@ -98,7 +125,10 @@ public class DBService {
         }
     }
 
-    public void find(String tableName, int key) {};
+    public void find(String tableName, int key) {
+        DataIndexFileReader reader = new DataIndexFileReader(databaseName, tableName);
+        System.out.println(reader.find(key));
+    };
 
     public void kill(String databaseName) {
         // Deletes all files related to a specific database

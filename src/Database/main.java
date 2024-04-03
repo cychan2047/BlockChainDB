@@ -3,14 +3,43 @@ package Database;
 import java.io.*;
 import java.util.logging.Logger;
 
-import static Database.DBUtil.Constants.BLOCK_SIZE;
-import static Database.DBUtil.Constants.DATABASE_DIRECTORY;
+import static Database.DBUtil.Constants.*;
 
 public class main {
 
     public static void main(String[] args) {
-//        testCreate();
-        testPut();
+//       testCreate();
+//        testPut();
+//        testGet();
+//        testRm();
+//        testFind();
+    }
+
+    public static void testFind() {
+        String databaseName = "test_group1";
+        String tableName = "movies-test.csv";
+        int key = 1;
+        DBService dbService = new DBService(databaseName);
+        dbService.find(tableName, key);
+        System.out.println("Find completed");
+    }
+
+    public static void testRm() {
+        String databaseName = "test_group1";
+        String tableName = "movies-test.csv";
+        DBService dbService = new DBService(databaseName);
+        dbService.rm(tableName);
+        printTestFile("test_group1", "test_output.txt");
+        System.out.println("Remove completed");
+    }
+
+    public static void testGet() {
+        String databaseName = "test_group1";
+        String tableName = "movies-test.csv";
+        String OSPath = "./src/UserPath";
+        DBService dbService = new DBService(databaseName);
+        dbService.get(OSPath, tableName);
+        System.out.println("Get completed");
     }
 
     public static void testPut() {

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import static Database.DBUtil.Constants.*;
+import static Database.DBUtil.StringUtils.*;
 
 public class DataIndexFileReader {
 
@@ -17,6 +18,8 @@ public class DataIndexFileReader {
 
     private DBRepository repo;
 
+    private int blockAccessed = 0;
+
     public DataIndexFileReader(String databaseName, String tableName) {
         this.databaseName = databaseName;
         this.tableName = tableName;
@@ -25,64 +28,70 @@ public class DataIndexFileReader {
     }
 
     public String find(int key) {
-        int[] result = findDataBlockByKey(key);
+        String indexBlock = findIndexBlock(key);
+        if (indexBlock == null) {
+            return "Cannot find the record with key " + key;
+        }
         StringBuilder sb = new StringBuilder();
-        if (result == null) {
-            return null;
-        }
-        int blockNum = result[0];
-        int accessedBlockCount = result[1];
-        try {
-            int currentBlock = blockNum % BLOCK_NUM_PER_FILE;
-            int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
-            int currentOffset = 0;
-            do {
-                String record = repo.read(PFSFileNum, currentOffset, currentBlock, RECORD_SIZE);
-                if (record.split(",")[0].equals(Integer.toString(key))) {
-                    return sb.append(record).append("\n")
-                            .append("# of blocks = ").append(accessedBlockCount).append("\n")
-                            .toString();
-                }
-                currentOffset += RECORD_SIZE;
-            } while (currentOffset < BLOCK_SIZE);
-        } catch (IOException e) {
-            Logger.getLogger(DataIndexFileReader.class.getName()).severe(e.getMessage());
-        }
-        return null;
+        String record = retrieveRecordByKey(key, Integer.parseInt(indexBlock));
+        sb.append(record).append("\n").append("# of blocks: ").append(blockAccessed);
+        return sb.toString();
     }
 
-    public int[] findDataBlockByKey(int key) {
-        int accessedBlockCount = 0;
-        String rootIndexBlock = FCBReaderWriter.getRootIndexBlock(tableName);
-        if (rootIndexBlock == null) {
+    public String findIndexBlock(int key) {
+        int rootNum = FCBReaderWriter.getRootIndexBlockNum(tableName);
+        if (rootNum == -1) {
             Logger.getLogger(DataIndexFileReader.class.getName()).severe("Table not found");
             return null;
         }
-        int currentBlockNum = Integer.parseInt(rootIndexBlock);
+        return findIndexBlock(key, rootNum);
+    }
+
+    // Search base on the ascending order of the key in the indexing block
+    private String findIndexBlock(int key, int blockNum) {
+        blockAccessed++;
+        int currentBlock = blockNum % BLOCK_NUM_PER_FILE;
+        int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
+        int currentKeyOffset = BLOCK_NUM_LENGTH; // Start from the first key
+        do {
+            try {
+                String currentKey = repo.read(PFSFileNum, currentKeyOffset, currentBlock, KEY_LENGTH);
+                if (currentKey.equals(" ".repeat(KEY_LENGTH))) {
+                    return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
+                }
+                int currentKeyInt = Integer.parseInt(currentKey);
+                if (key < currentKeyInt) {
+                    return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
+                } else if (key == currentKeyInt) {
+                    return repo.read(PFSFileNum, currentKeyOffset + KEY_LENGTH, currentBlock, BLOCK_NUM_LENGTH);
+                }
+                currentKeyOffset += KEY_LENGTH + 2 * BLOCK_NUM_LENGTH;
+            } catch (IOException e) {
+                Logger.getLogger(DataIndexFileReader.class.getName()).severe(e.getMessage());
+            }
+        } while (currentKeyOffset < BLOCK_SIZE);
+        return null;
+    }
+
+    private String retrieveRecordByKey(int key, int blockNum) {
+        int currentBlock = blockNum % BLOCK_NUM_PER_FILE;
+        int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
         try {
-            int currentOffset = BLOCK_NUM_LENGTH;
-            do {
-                int currentBlock = currentBlockNum % BLOCK_NUM_PER_FILE;
-                int PFSFileNum = currentBlockNum / BLOCK_NUM_PER_FILE;
-                accessedBlockCount++;
-                do {
-                    // Increment the accessed block count
-                    int currentKey = Integer.parseInt(repo.read(PFSFileNum, currentOffset, currentBlock, KEY_LENGTH));
-                    if (currentKey == key) {
-                        int resultBlockNum = Integer.parseInt(repo.read(PFSFileNum, currentOffset + KEY_LENGTH, currentBlock, BLOCK_NUM_LENGTH));
-                        return new int[] {resultBlockNum, accessedBlockCount};
-                    } else if (currentKey > key) {
-                        // Go to the left child
-                        currentBlockNum = Integer.parseInt(repo.read(PFSFileNum, currentOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH));
-                        break;
+            for (int slot = 0; slot < RECORD_SLOT_SIZE; slot++) {
+                if (repo.readChar(PFSFileNum, RECORD_SLOT_OFFSET + slot, currentBlock).equals("1")) {
+                    String record = removeTrailingSpaces(repo.read(PFSFileNum,
+                            slot * RECORD_SIZE,
+                            currentBlock,
+                            RECORD_SIZE));
+                    int recordKey = Integer.parseInt(record.split(",")[0]);
+                    if (recordKey == key) {
+                        return record;
                     }
-                    currentOffset += KEY_LENGTH + BLOCK_NUM_LENGTH;
-                } while (currentOffset < BLOCK_SIZE);
-            } while (currentBlockNum != 0);
+                }
+            }
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileReader.class.getName()).severe(e.getMessage());
         }
         return null;
     }
-
 }
