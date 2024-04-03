@@ -10,14 +10,14 @@ public class main {
     public static void main(String[] args) {
 //        System.out.println("Hello World");
 //        testCreate();
-        testPut();
+//        testPut();
 //        testGet();
 //        testRm();
 //        testFind();
 //        testDir();
 //        testKill();
-//          testDBController();
-//        testPutLarge();
+        testDBController();
+        //testPutLarge();
     }
 
     public static void testPutLarge() {
