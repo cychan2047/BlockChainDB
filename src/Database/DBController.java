@@ -37,7 +37,6 @@ public class DBController {
         // Handles different commands
         if (action.equals("open")) {
             dbService = new DBService(argument);  // Initializes DBService with the database name
-            dbService.create(); // Creates the database
             System.out.println("Database " + argument + " opened.");
         } else if (dbService == null) {
             System.out.println("No database is currently open. Please open a database first.");

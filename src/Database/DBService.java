@@ -1,9 +1,6 @@
 package Database;
 
-import Database.DBUtil.DataIndexFileWriter;
-import Database.DBUtil.FCBReaderWriter;
-import Database.DBUtil.FSMReaderWriter;
-import Database.DBUtil.MetadataReaderWriter;
+import Database.DBUtil.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,13 +69,13 @@ public class DBService {
                     // Read metadata from the METADATA_BLOCK_NUM
                     for (int i = 0; i < BLOCK_SIZE_OFFSET; i++) {
                         metadata.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, i, METADATA_BLOCK_NUM));
-
-                        String metadataName = metadata.length() >= 50 ? metadata.substring(0, 50).trim() : metadata.toString();
-                        String metadataSize = metadata.length() >= 60 ? metadata.substring(50, 60).trim() : "N/A";
-                        String metadataCount = metadata.length() >= 70 ? metadata.substring(60, 70).trim() : "N/A";
-
-                        System.out.println("MetaData: " + metadataName + "Size: " + metadataSize + "FileCount: " + metadataCount);
                     }
+                    String metadataName = metadata.length() >= 50 ? metadata.substring(0, 50).trim() : metadata.toString();
+                    String metadataSize = metadata.length() >= 60 ? metadata.substring(50, 60).trim() : "N/A";
+                    String metadataCount = metadata.length() >= 70 ? metadata.substring(60, 70).trim() : "N/A";
+
+                    System.out.println("MetaData: " + metadataName + "  Size: " + metadataSize + "  FileCount: " + metadataCount);
+
 
                     // Read file-specific data from the FCB_BLOCK_NUM
                     for (int i = FCB_BLOCK_NUM; i < FSM_BLOCK_NUM; i++) {
@@ -87,13 +84,12 @@ public class DBService {
                         } else {
                             for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
                                 fcbData.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, j, i));
-
-                                String fcbDataName = fcbData.length() >= 50 ? fcbData.substring(0, 50).trim() : fcbData.toString();
-                                String fcbDataSize = fcbData.length() >= 60 ? fcbData.substring(50, 60).trim() : "N/A";
-                                String fcbDataTime = fcbData.length() >= 70 ? fcbData.substring(60, 70).trim() : "N/A";
-
-                                System.out.println("FCB Data: " + fcbDataName + "Size: " + fcbDataSize + "Time: " + fcbDataTime);
                             }
+                            String fcbDataName = fcbData.length() >= 50 ? fcbData.substring(0, 50).trim() : fcbData.toString();
+                            String fcbDataSize = fcbData.length() >= 60 ? fcbData.substring(50, 60).trim() : "N/A";
+                            String fcbDataTime = fcbData.length() >= 70 ? fcbData.substring(60, 70).trim() : "N/A";
+
+                            System.out.println("FCB Data: " + fcbDataName + "  Size: " + fcbDataSize + "  Time: " + fcbDataTime);
                             fcbData.append("\n");
                         }
 
@@ -108,7 +104,16 @@ public class DBService {
         }
     }
 
-    public void find(String tableName, int key) {};
+    public void find(String tableName, int key) {
+        // Find a specific key in the database
+        DataIndexFileReader reader = new DataIndexFileReader(databaseName, tableName);
+        String result = reader.find(key);
+        if (result != null) {
+            System.out.println("Found key: " + key + " in table: " + tableName + "\n" + result);
+        } else {
+            System.out.println("Key: " + key + " not found in table: " + tableName);
+        }
+    };
 
     public void kill(String databaseName) {
         // Deletes all files related to a specific database
