@@ -66,8 +66,8 @@ public class DBRepository {
     }
 
     // Reads a specific block from a PFS file
-    public String readBlock(int PFSFileCount, int offset, int blockNum) throws IOException {
-        return read(PFSFileCount, offset, blockNum, BLOCK_SIZE);
+    public String readBlock(int PFSFileCount, int blockNum) throws IOException {
+        return read(PFSFileCount, 0, blockNum, BLOCK_SIZE);
     }
 
     // Reads a single character from a specific location in a PFS file

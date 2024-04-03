@@ -1,12 +1,11 @@
 package Database;
 
 import Database.DBUtil.DataIndexFileWriter;
+import Database.DBUtil.FCBReaderWriter;
 import Database.DBUtil.FSMReaderWriter;
-import Database.DBUtil.MetadataWriter;
+import Database.DBUtil.MetadataReaderWriter;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.logging.Logger;
 import static Database.DBUtil.Constants.*;
@@ -18,7 +17,10 @@ public class DBService {
     private String databaseName;
 
     // Constructor: Initializes the DBService with a specific database name
-    public DBService(String databaseName) {
+    public DBService(String databaseName) throws IllegalArgumentException {
+        if (databaseName.length() > FILE_NAME_LENGTH_MAX) {
+            throw new IllegalArgumentException("Database name is too long. Max length is " + FILE_NAME_LENGTH_MAX);
+        }
         this.PFSFileCount = 0;
         this.dbRepository = new DBRepository(databaseName);
         this.databaseName = databaseName;
@@ -27,16 +29,26 @@ public class DBService {
     public void create() {
         // Creates a new database file
         dbRepository.createPFSFile(PFSFileCount);
-        MetadataWriter metadataWriter = new MetadataWriter(databaseName);
-        metadataWriter.write(1, 0);
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        metadataReaderWriter.write(1, 0);
         FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
         fsmReaderWriter.initialize(0);
+        FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+        fcbReaderWriter.initialize();
     }
 
-    public void put(String tableName) {
+    public void put(String tableName) throws IllegalArgumentException {
+        if (tableName.length() > FILE_NAME_LENGTH_MAX) {
+            throw new IllegalArgumentException("Table name is too long. Max length is " + FILE_NAME_LENGTH_MAX);
+        }
         // TableName example: "movies-test.csv"
         DataIndexFileWriter writer = new DataIndexFileWriter(tableName, databaseName);
-        writer.writeDataFile(tableName);
+        writer.write();
+
+        // Update the Metadata
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        int kvTableCount = metadataReaderWriter.getKVTableCount();
+        metadataReaderWriter.write(1, kvTableCount + 1);
     };
 
     public void get(String OSPath, String tableName) {};
