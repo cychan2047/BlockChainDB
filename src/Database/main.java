@@ -8,13 +8,23 @@ import static Database.DBUtil.Constants.*;
 public class main {
 
     public static void main(String[] args) {
-       testCreate();
+//       testCreate();
 //        testPut();
 //        testGet();
 //        testRm();
 //        testFind();
 //        testDir();
 //        testKill();
+          testDBController();
+    }
+
+    public static void testDBController() {
+        // Initialize the DBController
+        DBController dbController = new DBController();
+
+        // Start the CLI with the simulated input
+        dbController.startCLI();
+
     }
 
     public static void testCreate() {
