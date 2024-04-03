@@ -57,11 +57,18 @@ public class DataIndexFileReader {
             try {
                 String currentKey = repo.read(PFSFileNum, currentKeyOffset, currentBlock, KEY_LENGTH);
                 if (currentKey.equals(" ".repeat(KEY_LENGTH))) {
-                    return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
+                    return null;
+                    //return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
                 }
                 int currentKeyInt = Integer.parseInt(currentKey);
                 if (key < currentKeyInt) {
-                    return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
+                    String nextBlockStr = repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH);
+                    if (nextBlockStr.isEmpty() || nextBlockStr.equals("99999")) {
+                        return null; // Return null if next block number is empty or a placeholder
+                    }
+                    int nextBlock = Integer.parseInt(nextBlockStr);
+                    return findIndexBlock(key, nextBlock);
+                    //return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
                 } else if (key == currentKeyInt) {
                     return repo.read(PFSFileNum, currentKeyOffset + KEY_LENGTH, currentBlock, BLOCK_NUM_LENGTH);
                 }
