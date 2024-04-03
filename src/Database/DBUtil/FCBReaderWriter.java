@@ -118,7 +118,6 @@ public class FCBReaderWriter {
                 }
                 currentIndex++;
             }
-            return -1;
         } catch (IOException e) {
             Logger.getLogger(DataFileReader.class.getName()).severe(e.getMessage());
         }
