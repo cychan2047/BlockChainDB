@@ -63,7 +63,7 @@ public class DBService {
 
                     // Read file-specific data from the FCB_BLOCK_NUM
                     for (int i = FCB_BLOCK_NUM; i < FSM_BLOCK_NUM; i++) {
-                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, i, FCB_BLOCK_NUM).equals("")) {
+                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, 0, i).equals(" ")) {
                             break;
                         } else {
                             for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
@@ -74,8 +74,12 @@ public class DBService {
 
                     }
 
+                    String metadataName = metadata.toString().substring(0, 50);
+                    String metadataSize = metadata.toString().substring(50, 60);
+                    String metadataCount = metadata.toString().substring(60, 70);
 
-                    System.out.println("Metadata: " + metadata.toString());
+
+                    System.out.println("MetaData: " + metadataName + "Size: " + metadataSize + "FileCount: " + metadataCount);
                     System.out.println("FCB Data: " + fcbData.toString());
                 } catch (IOException e) {
                     Logger.getLogger(DBService.class.getName()).severe("Error reading file data: " + e.getMessage());
