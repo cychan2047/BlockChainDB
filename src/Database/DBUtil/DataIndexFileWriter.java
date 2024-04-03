@@ -100,6 +100,7 @@ public class DataIndexFileWriter {
                 }
             }
             fsmReaderWriter.setAvailability(lastBlockNum, false);
+            bTree.display();
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
         }
@@ -107,11 +108,14 @@ public class DataIndexFileWriter {
     public void writeIndexFile() {
         try {
             HashSet<BTreeNode> nodes = bTree.getNodes();
-            HashMap<Integer, Integer> keyBlock = bTree.getKeyBlock();
-            HashMap<BTreeNode, Integer> nodeBlockNums = new HashMap<>();
+            HashMap<Integer, Integer> keyBlock = bTree.getKeyBlock(); // Get the data block number where the key is in
+            HashMap<BTreeNode, Integer> nodeBlockNums = new HashMap<>(); // Record the index node's index block number
             for (BTreeNode node : nodes) {
                 int blockNum = fsmReaderWriter.getNextAvailableBlock();
                 nodeBlockNums.put(node, blockNum);
+            }
+            for (BTreeNode node : nodes) {
+                int blockNum = nodeBlockNums.get(node);
                 int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
                 int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
                 String serializedNode = serializeBTreeNode(node, keyBlock, nodeBlockNums);
@@ -146,20 +150,18 @@ public class DataIndexFileWriter {
     public void updateFCB() {
         File tableFile = new File(TABLE_DIRECTORY + "/" + tableName);
         String size = String.valueOf(tableFile.length());
-        int FCBBlockNum = fcbReaderWriter.getNextAvailableFCB();
+        int FCBNum = fcbReaderWriter.getNextAvailableFCB();
         String dateTime = fcbReaderWriter.getCurrentDataTime();
-        try {
-            repo.write(FCB_PFS_FILE_NUM, TABLE_NAME_OFFSET, FCBBlockNum, tableName);
-            repo.write(FCB_PFS_FILE_NUM, TABLE_SIZE_OFFSET, FCBBlockNum, size);
-            repo.write(FCB_PFS_FILE_NUM, TABLE_TIME_OFFSET, FCBBlockNum, dateTime);
-            repo.write(FCB_PFS_FILE_NUM, STARTING_DATA_BLOCK_OFFSET, FCBBlockNum, blockNumTo5Digits(dataStartingBlockNum));
-            repo.write(FCB_PFS_FILE_NUM, ROOT_INDEX_BLOCK_OFFSET, FCBBlockNum, blockNumTo5Digits(indexRootBlockNum));
-            repo.write(FCB_PFS_FILE_NUM, ENDING_DATA_BLOCK_OFFSET, FCBBlockNum, blockNumTo5Digits(dataEndingBlockNum));
-            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, FCBBlockNum, FCB_NOT_AVAILABLE_MARKER);
-        } catch (IOException e) {
-            Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
-        }
-    };
+        fcbReaderWriter.write(
+                tableName,
+                size,
+                dateTime,
+                blockNumTo5Digits(dataStartingBlockNum),
+                blockNumTo5Digits(indexRootBlockNum),
+                blockNumTo5Digits(dataEndingBlockNum),
+                FCBNum
+        );
+    }
 
     public String serializeBTreeNode(BTreeNode node, HashMap <Integer, Integer> keyBlock, HashMap <BTreeNode, Integer> nodeBlockNums) {
         if (node instanceof InternalNode) {
