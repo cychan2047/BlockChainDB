@@ -53,7 +53,7 @@ public class DataIndexFileReader {
 
     public int[] findDataBlockByKey(int key) {
         int accessedBlockCount = 0;
-        String rootIndexBlock = FCBReaderWriter.getRootIndexBlock(tableName);
+        String rootIndexBlock = FCBReaderWriter.getRootIndexBlock(tableName).trim();
         if (rootIndexBlock == null) {
             Logger.getLogger(DataIndexFileReader.class.getName()).severe("Table not found");
             return null;
