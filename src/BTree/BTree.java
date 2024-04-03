@@ -26,7 +26,7 @@ public class BTree {
     */
 
     // Minimum degree of the B-Tree
-    private final int t = 2;
+    private final int t = 6;
     // Maximum keys in a node
     private final int MAX_KEYS = 2 * t - 1;
     // Minimum keys in a node
@@ -172,10 +172,42 @@ public class BTree {
     }
 
     public HashSet<BTreeNode> getNodes() {
-        return new HashSet<>(nodeToParent.keySet());
+        HashSet<BTreeNode> nodes = new HashSet<>(nodeToParent.keySet());
+        nodes.add(root);
+        return nodes;
     }
 
     public HashMap<Integer, Integer> getKeyBlock() {
         return keyBlock;
+    }
+
+    public void display() {
+        display(root);
+    }
+
+    public void display(BTreeNode node) {
+        display(node, 0);
+    }
+
+    // Displays the B-Tree recursively with indentation based on the level
+    private void display(BTreeNode node, int level) {
+        List<Integer> keys = node.getKeys();
+        if (!node.isLeaf()) {
+            List<BTreeNode> children = ((InternalNode) node).getChildren();
+            for (int i = 0; i < children.size(); i++) {
+                display(children.get(i), level + 1);
+                if (i < keys.size()) {
+                    System.out.println("    ".repeat(level) + keys.get(i));
+                }
+            }
+        } else {
+            for (Integer key : keys) {
+                System.out.println("    ".repeat(level) + key);
+            }
+        }
+    }
+
+    public BTreeNode getParent(BTreeNode node) {
+        return nodeToParent.get(node);
     }
 }
