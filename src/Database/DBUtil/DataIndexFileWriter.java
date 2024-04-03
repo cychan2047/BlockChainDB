@@ -52,10 +52,10 @@ public class DataIndexFileWriter {
     public void write() {
         System.out.println("Running writeDataFile");
         writeDataFile();
-//        System.out.println("Running writeIndexFile");
-//        writeIndexFile();
-//        System.out.println("Running updateFCB");
-//        updateFCB();
+        System.out.println("Running writeIndexFile");
+        writeIndexFile();
+        System.out.println("Running updateFCB");
+        updateFCB();
     }
 
     public void writeDataFile() {
@@ -65,11 +65,13 @@ public class DataIndexFileWriter {
             int blockNum = -1;
             int currentBlockNum = -1;
             int PFSFileNum = 0;
-            int slotNum = 0;
+            int slotNum;
             String line;
             List<Integer> blockNums = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
+                System.out.println("Line: " + line);
                 // Locate the block to write
+                System.out.println("AvailableSlots: " + availableSlots);
                 if (!availableSlots.isEmpty()) {
                     slotNum = availableSlots.poll();
                 } else {
@@ -100,25 +102,32 @@ public class DataIndexFileWriter {
                 // Step 2: Mark the slot as occupied
                 repo.write(PFSFileNum, RECORD_SLOT_OFFSET + slotNum, currentBlockNum, NOT_AVAILABLE_MARKER);
                 // Step 3: Update FSM if all slots are occupied
+                System.out.println("Record slot: " + repo.read(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, RECORD_SLOT_SIZE));
                 if (repo.read(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, RECORD_SLOT_SIZE).
-                        equals(NOT_AVAILABLE_MARKER.repeat(NUM_OF_RECORDS))) {
+                        equals("1111")) {
                     fsmReaderWriter.setAvailability(blockNum, false);
                 }
                 // Step 4: Add id to the BTree
                 int id = Integer.parseInt(getRecordId(line));
-                bTree.insert(id);
+                bTree.insert(id, blockNum);
             }
+            System.out.println("Data file completed");
 
             // Update the number of next block for each block occupied
             for (int i = 0; i < blockNums.size() - 1; i++) {
-                writeNextBlockNum(blockNums.get(i), blockNums.get(i + 1));
+                blockNum = blockNums.get(i);
+                currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
+                PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
+                String next = blockNumTo5Digits(blockNums.get(i + 1));
+                repo.write(PFSFileNum, NEXT_BLOCK_NUM_OFFSET, currentBlockNum, next);
             }
             // Mark the last block as the ending block
             dataEndingBlockNum = blockNums.get(blockNums.size() - 1);
             repo.write(dataEndingBlockNum / BLOCK_NUM_PER_FILE,
-                    255,
+                    NEXT_BLOCK_NUM_OFFSET,
                     dataEndingBlockNum % BLOCK_NUM_PER_FILE,
                     END_OF_FILE);
+
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
         }
@@ -136,6 +145,7 @@ public class DataIndexFileWriter {
                 int blockNum = fsmReaderWriter.getNextAvailableBlock();
                 nodeBlockNums.put(node, blockNum);
             }
+            System.out.println("NodeBlockNums: " + nodeBlockNums);
             for (BTreeNode node : nodes) {
                 int blockNum = nodeBlockNums.get(node);
                 int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
