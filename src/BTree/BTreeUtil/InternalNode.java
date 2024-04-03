@@ -42,4 +42,8 @@ public class InternalNode extends BTreeNode {
         this.children = children;
     }
 
+    public String toString() {
+        return "InternalNode{" + "keys=" + keys;
+    }
+
 }

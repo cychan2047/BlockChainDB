@@ -1,6 +1,8 @@
 package Database.DBUtil;
 
 import Database.DBRepository;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -10,7 +12,7 @@ import static Database.DBUtil.Constants.*;
 public class FSMReaderWriter {
 
     private static final String INITIAL_BITMAP = "ffc" + "0".repeat(BLOCK_SIZE - 3);
-    private static final String FOLLOWING_BITMAP = "8" + "0".repeat(BLOCK_SIZE - 1);
+    private static final String FOLLOWING_BITMAP = "004" + "0".repeat(BLOCK_SIZE - 3);
 
     private static final HashMap<String, String> hexToBin = new HashMap<>() {{
         put("0", "0000");
@@ -63,7 +65,11 @@ public class FSMReaderWriter {
     public void initialize(int PFSFileNum) {
         try {
             DBRepository repo = new DBRepository(databaseName);
-            repo.write(PFSFileNum, FSM_BLOCK_OFFSET, FSM_BLOCK_NUM, INITIAL_BITMAP);
+            if (PFSFileNum == 0) {
+                repo.write(PFSFileNum, FSM_BLOCK_OFFSET, FSM_BLOCK_NUM, INITIAL_BITMAP);
+            } else {
+                repo.write(PFSFileNum, FSM_BLOCK_OFFSET, FSM_BLOCK_NUM, FOLLOWING_BITMAP);
+            }
         } catch (IOException e) {
             Logger.getLogger(FSMReaderWriter.class.getName()).severe(e.getMessage());
         }
@@ -100,13 +106,37 @@ public class FSMReaderWriter {
     }
 
     public int getNextAvailableBlock() {
+        // Check the next available block.
+        // If all full, create a new one and return the first block automatically.
+        // BlockNum = PFSFileNum * BLOCK_NUM_PER_FILE + currentBlockNum
+        DBRepository repo = new DBRepository(databaseName);
+        File file;
+        int currentPFSFileNum = METADATA_PFS_FILE_NUM;
+        do {
+            int result = getNextAvailableBlock(currentPFSFileNum);
+            if (result != -1) {
+                return result + currentPFSFileNum * BLOCK_NUM_PER_FILE;
+            } else {
+                currentPFSFileNum++;
+            }
+            file = new File(DATABASE_DIRECTORY + "/" + databaseName + ".db" + currentPFSFileNum);
+        } while (file.exists());
+        repo.createPFSFile(currentPFSFileNum);
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        int KVTableCount = metadataReaderWriter.getKVTableCount();
+        metadataReaderWriter.write(currentPFSFileNum, KVTableCount);
+        return currentPFSFileNum * BLOCK_NUM_PER_FILE;
+    }
+
+
+    public int getNextAvailableBlock(int PFSFileNum) {
         DBRepository repo = new DBRepository(databaseName);
         do {
             if (!freeBlocksBuffer.isEmpty()) {
                 return freeBlocksBuffer.poll();
             }
             try {
-                String hex = repo.readChar(FSM_PFS_FILE_NUM, currentIndex / 4, FSM_BLOCK_NUM);
+                String hex = repo.readChar(PFSFileNum, currentIndex / 4, FSM_BLOCK_NUM);
                 if (hex.equals("F")) {
                     currentIndex += 4;
                     continue;

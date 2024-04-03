@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 import static Database.DBUtil.Constants.*;
+import static Database.DBUtil.StringUtils.*;
 
 public class FCBReaderWriter {
 
@@ -47,25 +48,29 @@ public class FCBReaderWriter {
         }
     }
 
-    public String getRootIndexBlock(String tableName) {
+    public int getRootIndexBlockNum(String tableName) {
         try {
-            int currentIndex = FCB_BLOCK_NUM;
+            int currentIndex = Constants.STARTING_FCB_NUM;
             while (repo.readChar(FSM_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, currentIndex).equals(FCB_MARKER)) {
                 String currentTableName = repo.read(FSM_PFS_FILE_NUM, TABLE_NAME_OFFSET, currentIndex, TABLE_SIZE_OFFSET - TABLE_NAME_OFFSET);
                 if (removeTrailingSpaces(currentTableName).equals(tableName)) {
-                    return repo.read(FSM_PFS_FILE_NUM, ROOT_INDEX_BLOCK_OFFSET, currentIndex, ENDING_DATA_BLOCK_OFFSET - ROOT_INDEX_BLOCK_OFFSET);
+                    String data = repo.read(FSM_PFS_FILE_NUM,
+                            ROOT_INDEX_BLOCK_OFFSET,
+                            currentIndex,
+                            ENDING_DATA_BLOCK_OFFSET - ROOT_INDEX_BLOCK_OFFSET);
+                    return Integer.parseInt(removeTrailingSpaces(data));
                 }
                 currentIndex++;
             }
         } catch (IOException e) {
             Logger.getLogger(DataFileReader.class.getName()).severe(e.getMessage());
         }
-        return null;
+        return -1;
     }
 
     public String getStartingDataBlock(String tableName) {
         try {
-            int currentIndex = FCB_BLOCK_NUM;
+            int currentIndex = Constants.STARTING_FCB_NUM;
             while (repo.readChar(FSM_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, currentIndex).equals(FCB_MARKER)) {
                 String currentTableName = repo.read(FSM_PFS_FILE_NUM, TABLE_NAME_OFFSET, currentIndex, TABLE_SIZE_OFFSET - TABLE_NAME_OFFSET);
                 if (removeTrailingSpaces(currentTableName).equals(tableName)) {
@@ -79,13 +84,7 @@ public class FCBReaderWriter {
         return null;
     }
 
-    public String removeTrailingSpaces (String s){
-        int endIndex = s.length() - 1;
-        while (endIndex >= 0 && Character.isWhitespace(s.charAt(endIndex))) {
-            endIndex--;
-        }
-        return s.substring(0, endIndex + 1);
-    }
+
 
     public int getNextAvailableFCB() throws IllegalStateException {
         try {
@@ -107,5 +106,46 @@ public class FCBReaderWriter {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return now.format(formatter);
+    }
+
+    public int getStartingBlockNumByTableName(String tableName) {
+        try {
+            int currentIndex = STARTING_FCB_NUM;
+            while (repo.readChar(FCB_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, currentIndex).equals(FCB_MARKER)) {
+                String currentTableName = repo.read(FCB_PFS_FILE_NUM, TABLE_NAME_OFFSET, currentIndex, TABLE_SIZE_OFFSET - TABLE_NAME_OFFSET);
+                if (removeTrailingSpaces(currentTableName).equals(tableName)) {
+                    return Integer.parseInt(repo.read(FCB_PFS_FILE_NUM, STARTING_DATA_BLOCK_OFFSET, currentIndex, BLOCK_NUM_LENGTH));
+                }
+                currentIndex++;
+            }
+        } catch (IOException e) {
+            Logger.getLogger(DataFileReader.class.getName()).severe(e.getMessage());
+        }
+        return -1;
+    }
+
+    public int getFCBNumByTableName(String tableName) {
+        try {
+            int currentIndex = STARTING_FCB_NUM;
+            while (repo.readChar(FCB_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, currentIndex).equals(FCB_MARKER)) {
+                String currentTableName = repo.read(FCB_PFS_FILE_NUM, TABLE_NAME_OFFSET, currentIndex, TABLE_SIZE_OFFSET - TABLE_NAME_OFFSET);
+                if (removeTrailingSpaces(currentTableName).equals(tableName)) {
+                    return currentIndex;
+                }
+                currentIndex++;
+            }
+        } catch (IOException e) {
+            Logger.getLogger(DataFileReader.class.getName()).severe(e.getMessage());
+        }
+        return -1;
+    }
+
+    public void clear(int FCBNum) {
+        try {
+            repo.write(FCB_PFS_FILE_NUM, TABLE_NAME_OFFSET, FCBNum, " ".repeat(FCB_AVAILABILITY_OFFSET));
+            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, FCBNum, FCB_AVAILABLE_MARKER);
+        } catch (IOException e) {
+            Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
+        }
     }
 }

@@ -100,7 +100,6 @@ public class DataIndexFileWriter {
                 }
             }
             fsmReaderWriter.setAvailability(lastBlockNum, false);
-            bTree.display();
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
         }
@@ -108,6 +107,10 @@ public class DataIndexFileWriter {
     public void writeIndexFile() {
         try {
             HashSet<BTreeNode> nodes = bTree.getNodes();
+            for (BTreeNode node : nodes) {
+                System.out.println("Node: " + node);
+            }
+
             HashMap<Integer, Integer> keyBlock = bTree.getKeyBlock(); // Get the data block number where the key is in
             HashMap<BTreeNode, Integer> nodeBlockNums = new HashMap<>(); // Record the index node's index block number
             for (BTreeNode node : nodes) {
@@ -128,19 +131,18 @@ public class DataIndexFileWriter {
 //                System.out.println("Node: " + serialized + " BlockNum: " + entry.getValue());
 //            }
 
-
-            // Write the blockNum of each index node's parent
-            for (BTreeNode node : nodes) {
-                int blockNum = nodeBlockNums.get(node);
-                int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
-                int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
-                if (node != bTree.getRoot()) {
-                    int parentBlockNum = nodeBlockNums.get(bTree.getParent(node));
-                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, blockNumTo5Digits(parentBlockNum));
-                } else {
-                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, NULL_NODE_NUM);
-                }
-            }
+//
+//            // Write the blockNum of each index node's parent
+//            for (BTreeNode node : nodes) {
+//                int blockNum = nodeBlockNums.get(node);
+//                int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
+//                int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
+//                if (node != bTree.getRoot()) {
+//                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, blockNumTo5Digits(parentBlockNum));
+//                } else {
+//                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, NULL_NODE_NUM);
+//                }
+//            }
             indexRootBlockNum = nodeBlockNums.get(bTree.getRoot());
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());

@@ -33,7 +33,6 @@ public class BTree {
     private final int MIN_KEYS = t - 1;
     private int nodeCount;
 
-    private HashMap<BTreeNode, BTreeNode> nodeToParent;
 
     private HashMap<Integer, Integer> keyBlock;
 
@@ -42,8 +41,6 @@ public class BTree {
         root = new LeafNode();
         nodeCount = 0;
         nodeCount++;
-        nodeToParent = new HashMap<>();
-        nodeToParent.put(root, null);
         keyBlock = new HashMap<>();
     }
 
@@ -88,9 +85,7 @@ public class BTree {
         parent.getChildren().add(index + 1, right);
 
         // Updating the node count
-        nodeToParent.remove(prev);
-        nodeToParent.put(left, parent);
-        nodeToParent.put(right, parent);
+
     }
 
     // Insert a value into the B-Tree and store the block number
@@ -109,7 +104,6 @@ public class BTree {
             s.getChildren().add(r);
             split(s, 0);
             insertNonFull(s, value);
-            nodeToParent.put(r, s);
         } else {
             // Insert into non-full root
             insertNonFull(r, value);
@@ -171,11 +165,6 @@ public class BTree {
         }
     }
 
-    public HashSet<BTreeNode> getNodes() {
-        HashSet<BTreeNode> nodes = new HashSet<>(nodeToParent.keySet());
-        nodes.add(root);
-        return nodes;
-    }
 
     public HashMap<Integer, Integer> getKeyBlock() {
         return keyBlock;
@@ -207,7 +196,20 @@ public class BTree {
         }
     }
 
-    public BTreeNode getParent(BTreeNode node) {
-        return nodeToParent.get(node);
+    public HashSet<BTreeNode> getNodes() {
+        HashSet<BTreeNode> nodes = new HashSet<>();
+        getNodes(root, nodes);
+        return nodes;
     }
+
+    private void getNodes(BTreeNode node, HashSet<BTreeNode> nodes) {
+        nodes.add(node);
+        if (!node.isLeaf()) {
+            List<BTreeNode> children = ((InternalNode) node).getChildren();
+            for (BTreeNode child : children) {
+                getNodes(child, nodes);
+            }
+        }
+    }
+
 }
