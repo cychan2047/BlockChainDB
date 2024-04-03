@@ -58,11 +58,12 @@ public class DBService {
     public void dir() {
         // Lists all the metadata and FCB info
         File directory = new File(DATABASE_DIRECTORY);
-        File[] files = directory.listFiles((dir, name) -> name.endsWith(".db"));
+        File[] files = directory.listFiles((dir, name) -> name.endsWith(".db0"));
 
         if (files != null) {
             for (File file : files) {
                 String databaseName = file.getName().split("\\.db")[0];
+                System.out.println("Database: " + databaseName);
 
                 StringBuilder metadata = new StringBuilder();
                 StringBuilder fcbData = new StringBuilder();
@@ -71,24 +72,33 @@ public class DBService {
                     // Read metadata from the METADATA_BLOCK_NUM
                     for (int i = 0; i < BLOCK_SIZE_OFFSET; i++) {
                         metadata.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, i, METADATA_BLOCK_NUM));
+
+                        String metadataName = metadata.length() >= 50 ? metadata.substring(0, 50).trim() : metadata.toString();
+                        String metadataSize = metadata.length() >= 60 ? metadata.substring(50, 60).trim() : "N/A";
+                        String metadataCount = metadata.length() >= 70 ? metadata.substring(60, 70).trim() : "N/A";
+
+                        System.out.println("MetaData: " + metadataName + "Size: " + metadataSize + "FileCount: " + metadataCount);
                     }
 
                     // Read file-specific data from the FCB_BLOCK_NUM
                     for (int i = FCB_BLOCK_NUM; i < FSM_BLOCK_NUM; i++) {
-                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, i, FCB_BLOCK_NUM).equals("")) {
+                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, 0, i).equals(" ")) {
                             break;
                         } else {
                             for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
                                 fcbData.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, j, i));
+
+                                String fcbDataName = fcbData.length() >= 50 ? fcbData.substring(0, 50).trim() : fcbData.toString();
+                                String fcbDataSize = fcbData.length() >= 60 ? fcbData.substring(50, 60).trim() : "N/A";
+                                String fcbDataTime = fcbData.length() >= 70 ? fcbData.substring(60, 70).trim() : "N/A";
+
+                                System.out.println("FCB Data: " + fcbDataName + "Size: " + fcbDataSize + "Time: " + fcbDataTime);
                             }
                             fcbData.append("\n");
                         }
 
                     }
 
-
-                    System.out.println("Metadata: " + metadata.toString());
-                    System.out.println("FCB Data: " + fcbData.toString());
                 } catch (IOException e) {
                     Logger.getLogger(DBService.class.getName()).severe("Error reading file data: " + e.getMessage());
                 }
@@ -118,6 +128,7 @@ public class DBService {
         }
     }
 
-    public void quit() {};
-
+    public void quit() {
+        System.out.println("Closing the database and exiting.");
+    }
 }
