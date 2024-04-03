@@ -1,5 +1,9 @@
 package Database;
 
+import Database.DBUtil.FCBReaderWriter;
+import Database.DBUtil.FSMReaderWriter;
+import Database.DBUtil.MetadataReaderWriter;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets.*;
 import java.util.Arrays;
@@ -21,6 +25,10 @@ public class DBRepository {
     public void createPFSFile(int PFSFileCount) {
         // Create a new file
         String name = databaseName + ".db" + PFSFileCount;
+        File directory = new File(DATABASE_DIRECTORY);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         File file = new File(DATABASE_DIRECTORY, name);
         try {
             boolean created = file.createNewFile();
@@ -44,6 +52,19 @@ public class DBRepository {
         } catch (IOException e) {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
+
+        System.out.println("PFSFileCount: " + PFSFileCount);
+
+        // Initialize the metadata, FSM, and FCB
+        if (PFSFileCount == 0) {
+            MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+            metadataReaderWriter.write(1, 0);
+            FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+            fcbReaderWriter.initialize();
+        }
+        FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
+        fsmReaderWriter.initialize(PFSFileCount);
+
     }
 
     // Prints the contents of a test file
@@ -57,7 +78,7 @@ public class DBRepository {
         }
 
         try (RandomAccessFile file = new RandomAccessFile(pathname, "rw")) {
-            System.out.println("offest: " + offset + " blockNum: " + blockNum + " content: " + content);
+            System.out.println("offest: " + offset + " blockNum: " + blockNum + " content: " + content + " PFsFileNum: " + PFSFileNum);
             file.seek(offset + (long) blockNum * BLOCK_SIZE);
             file.writeBytes(content);
         } catch (IOException e) {

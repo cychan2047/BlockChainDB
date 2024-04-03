@@ -33,4 +33,8 @@ public class LeafNode extends BTreeNode{
     public InternalNode toInternalNode() {
         return new InternalNode(this.keys, new ArrayList<BTreeNode>());
     }
+
+    public String toString() {
+        return "LeafNode{" + "keys=" + keys + '}';
+    }
 }

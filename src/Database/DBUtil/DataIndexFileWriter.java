@@ -50,57 +50,84 @@ public class DataIndexFileWriter {
 
     // Write the entire table into the block
     public void write() {
+        System.out.println("Running writeDataFile");
         writeDataFile();
+        System.out.println("Running writeIndexFile");
         writeIndexFile();
+        System.out.println("Running updateFCB");
         updateFCB();
     }
 
     public void writeDataFile() {
         File tableFile = new File(TABLE_DIRECTORY + "/" + tableName);
         try (BufferedReader reader = new BufferedReader(new FileReader(tableFile))) {
-            List<Integer> blockNums = new ArrayList<>();
+            Queue<Integer> availableSlots = new LinkedList<>();
             int blockNum = -1;
-            int currentBlockNum;
+            int currentBlockNum = -1;
             int PFSFileNum = 0;
             int slotNum;
             String line;
-            Queue<Integer> slotNums = new LinkedList<>();
+            List<Integer> blockNums = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
-                if (line.length() > RECORD_SIZE) {
-                    line = line.substring(0, RECORD_SIZE);
-                }
-                if (slotNums.isEmpty()) {
+                System.out.println("Line: " + line);
+                // Locate the block to write
+                System.out.println("AvailableSlots: " + availableSlots);
+                if (!availableSlots.isEmpty()) {
+                    slotNum = availableSlots.poll();
+                } else {
                     blockNum = fsmReaderWriter.getNextAvailableBlock();
                     if (dataStartingBlockNum == -1) {
                         dataStartingBlockNum = blockNum;
                     }
-                    dataEndingBlockNum = blockNum;
-                    System.out.println("next available block: " + blockNum);
                     blockNums.add(blockNum);
-                    slotNums = new LinkedList<>(Arrays.asList(0, 1, 2, 3));
+                    // When a new block is applied, initialize the block
+                    currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
+                    PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
+                    repo.write(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, AVAILABLE_MARKER.repeat(NUM_OF_RECORDS));
+                    repo.write(PFSFileNum, FILE_TYPE_MARKER_OFFSET, currentBlockNum, DATA_MARKER);
+                    // Add all slots from 0 to 3 to availableSlots
+                    for (int i = 0; i < NUM_OF_RECORDS; i++) {
+                        availableSlots.add(i);
+                    }
+                    slotNum = availableSlots.poll();
                 }
-                slotNum = slotNums.poll();
+
+                // Writing process
+                // Step 1: Write the record into the block
+                // Trim the line if it exceeds the size limit
+                if (line.length() > RECORD_SIZE) {
+                    line = line.substring(0, RECORD_SIZE);
+                }
+                repo.write(PFSFileNum, slotNum * RECORD_SIZE, currentBlockNum, line);
+                // Step 2: Mark the slot as occupied
+                repo.write(PFSFileNum, RECORD_SLOT_OFFSET + slotNum, currentBlockNum, NOT_AVAILABLE_MARKER);
+                // Step 3: Update FSM if all slots are occupied
+                System.out.println("Record slot: " + repo.read(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, RECORD_SLOT_SIZE));
+                if (repo.read(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, RECORD_SLOT_SIZE).
+                        equals("1111")) {
+                    fsmReaderWriter.setAvailability(blockNum, false);
+                }
+                // Step 4: Add id to the BTree
+                int id = Integer.parseInt(getRecordId(line));
+                bTree.insert(id, blockNum);
+            }
+            System.out.println("Data file completed");
+
+            // Update the number of next block for each block occupied
+            for (int i = 0; i < blockNums.size() - 1; i++) {
+                blockNum = blockNums.get(i);
                 currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
                 PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
-                if (repo.readChar(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum).equals(" ")) {
-                    initializeDataFile(blockNum);
-                }
-                System.out.println("slotNum: " + slotNum);
-                writeDataRecord(line, blockNum, slotNum);
-                int id = getRecordId(line);
-                bTree.insert(id, blockNum);
-                System.out.println("blockNums: " + blockNums);
+                String next = blockNumTo5Digits(blockNums.get(i + 1));
+                repo.write(PFSFileNum, NEXT_BLOCK_NUM_OFFSET, currentBlockNum, next);
             }
-            int lastBlockNum = blockNums.get(blockNums.size() - 1);
-            for (int i = 0; i < blockNums.size(); i++) {
-                if (i != blockNums.size() - 1) {
-                    writeNextBlockNum(blockNums.get(i), blockNums.get(i + 1));
-                } else {
-                    repo.write(PFSFileNum, NEXT_BLOCK_NUM_OFFSET, lastBlockNum % BLOCK_NUM_PER_FILE, END_OF_FILE);
-                }
-            }
-            fsmReaderWriter.setAvailability(lastBlockNum, false);
-            bTree.display();
+            // Mark the last block as the ending block
+            dataEndingBlockNum = blockNums.get(blockNums.size() - 1);
+            repo.write(dataEndingBlockNum / BLOCK_NUM_PER_FILE,
+                    NEXT_BLOCK_NUM_OFFSET,
+                    dataEndingBlockNum % BLOCK_NUM_PER_FILE,
+                    END_OF_FILE);
+
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
         }
@@ -108,12 +135,17 @@ public class DataIndexFileWriter {
     public void writeIndexFile() {
         try {
             HashSet<BTreeNode> nodes = bTree.getNodes();
+            for (BTreeNode node : nodes) {
+                System.out.println("Node: " + node);
+            }
+
             HashMap<Integer, Integer> keyBlock = bTree.getKeyBlock(); // Get the data block number where the key is in
             HashMap<BTreeNode, Integer> nodeBlockNums = new HashMap<>(); // Record the index node's index block number
             for (BTreeNode node : nodes) {
                 int blockNum = fsmReaderWriter.getNextAvailableBlock();
                 nodeBlockNums.put(node, blockNum);
             }
+            System.out.println("NodeBlockNums: " + nodeBlockNums);
             for (BTreeNode node : nodes) {
                 int blockNum = nodeBlockNums.get(node);
                 int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
@@ -128,19 +160,18 @@ public class DataIndexFileWriter {
 //                System.out.println("Node: " + serialized + " BlockNum: " + entry.getValue());
 //            }
 
-
-            // Write the blockNum of each index node's parent
-            for (BTreeNode node : nodes) {
-                int blockNum = nodeBlockNums.get(node);
-                int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
-                int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
-                if (node != bTree.getRoot()) {
-                    int parentBlockNum = nodeBlockNums.get(bTree.getParent(node));
-                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, blockNumTo5Digits(parentBlockNum));
-                } else {
-                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, NULL_NODE_NUM);
-                }
-            }
+//
+//            // Write the blockNum of each index node's parent
+//            for (BTreeNode node : nodes) {
+//                int blockNum = nodeBlockNums.get(node);
+//                int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
+//                int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
+//                if (node != bTree.getRoot()) {
+//                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, blockNumTo5Digits(parentBlockNum));
+//                } else {
+//                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, NULL_NODE_NUM);
+//                }
+//            }
             indexRootBlockNum = nodeBlockNums.get(bTree.getRoot());
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());
@@ -261,8 +292,9 @@ public class DataIndexFileWriter {
         return -1;
     }
 
-    private int getRecordId(String record) {
-        return Integer.parseInt(record.split(",")[0]);
+    private String getRecordId(String record) {
+        System.out.println("record: " + record);
+        return record.split(",")[0];
     }
 
     public BTree getBTree() {

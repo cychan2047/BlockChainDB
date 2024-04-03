@@ -55,7 +55,7 @@ public class DBController {
                     dbService.put(argument);
                     break;
                 case "get":
-                    dbService.get(System.getProperty("user.dir"), argument);
+                    dbService.get(DATABASE_DIRECTORY,argument);
                     break;
                 case "rm":
                     dbService.rm(argument);
