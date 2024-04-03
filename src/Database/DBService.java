@@ -50,10 +50,14 @@ public class DBService {
     };
 
     public void get(String OSPath, String tableName) {
-        File file = new File(OSPath, tableName);
         FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+        int blockNum = fcbReaderWriter.getStartingBlockNumByTableName(tableName);
+        if (blockNum == -1) {
+            System.out.println("Table '" + tableName + "' not found in the database.");
+            return;
+        }
+        File file = new File(OSPath, tableName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            int blockNum = fcbReaderWriter.getStartingBlockNumByTableName(tableName);
             do {
                 int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
                 int currentFileNum = blockNum / BLOCK_NUM_PER_FILE;
@@ -70,6 +74,7 @@ public class DBService {
                 if (nextBlock.equals("EOF  ")) break;
                 blockNum = Integer.parseInt(nextBlock);
             } while (true);
+            System.out.println("File '" + tableName + "' has been written to " + OSPath);
         } catch (IOException e) {
             Logger.getLogger(DBService.class.getName()).severe("Error writing to file: " + e.getMessage());
         }
