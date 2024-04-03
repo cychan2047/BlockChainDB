@@ -1,6 +1,7 @@
 package Database;
 
 import Database.DBUtil.DataIndexFileWriter;
+import Database.DBUtil.FCBReaderWriter;
 import Database.DBUtil.FSMReaderWriter;
 import Database.DBUtil.MetadataReaderWriter;
 
@@ -32,6 +33,8 @@ public class DBService {
         metadataReaderWriter.write(1, 0);
         FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
         fsmReaderWriter.initialize(0);
+        FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+        fcbReaderWriter.initialize();
     }
 
     public void put(String tableName) throws IllegalArgumentException {

@@ -9,12 +9,13 @@ import static Database.DBUtil.Constants.*;
 public class MetadataReaderWriter {
 
     private final String databaseName;
+    private final DBRepository repo;
     public MetadataReaderWriter(String databaseName) {
         this.databaseName = databaseName;
+        this.repo = new DBRepository(databaseName);
     }
 
     public void write(int PFSFileNum, int kvTableCount) {
-        DBRepository repo = new DBRepository(databaseName);
         try {
             repo.write(METADATA_PFS_FILE_NUM, DB_NAME_OFFSET, METADATA_BLOCK_NUM, databaseName);
             repo.write(METADATA_PFS_FILE_NUM, DB_SIZE_OFFSET, METADATA_BLOCK_NUM, Integer.toString(FILE_SIZE));
@@ -28,9 +29,14 @@ public class MetadataReaderWriter {
     }
 
     public int getPFSFileCount() {
-        DBRepository repo = new DBRepository(databaseName);
         try {
-            return Integer.parseInt(repo.read(METADATA_PFS_FILE_NUM, PFS_FILE_COUNT_OFFSET, METADATA_BLOCK_NUM, METADATA_NUM_LENGTH_MAX));
+            StringBuilder data = new StringBuilder();
+            for (int i = 0; i < METADATA_NUM_LENGTH_MAX; i++) {
+                String digit = repo.readChar(METADATA_PFS_FILE_NUM, i + PFS_FILE_COUNT_OFFSET, METADATA_BLOCK_NUM);
+                if (digit.equals(" ")) break;
+                data.append(digit);
+            }
+            return Integer.parseInt(data.toString());
         } catch (IOException e) {
             Logger.getLogger(MetadataReaderWriter.class.getName()).severe(e.getMessage());
         }
@@ -38,9 +44,14 @@ public class MetadataReaderWriter {
     }
 
     public int getKVTableCount() {
-        DBRepository repo = new DBRepository(databaseName);
         try {
-            return Integer.parseInt(repo.read(METADATA_PFS_FILE_NUM, KV_TABLE_OFFSET, METADATA_BLOCK_NUM, METADATA_NUM_LENGTH_MAX));
+            StringBuilder data = new StringBuilder();
+            for (int i = 0; i < METADATA_NUM_LENGTH_MAX; i++) {
+                String digit = repo.readChar(METADATA_PFS_FILE_NUM, i + KV_TABLE_OFFSET, METADATA_BLOCK_NUM);
+                if (digit.equals(" ")) break;
+                data.append(digit);
+            }
+            return Integer.parseInt(data.toString());
         } catch (IOException e) {
             Logger.getLogger(MetadataReaderWriter.class.getName()).severe(e.getMessage());
         }
