@@ -70,9 +70,13 @@ public class DataIndexFileRemover {
     }
 
     public void removeFCB() {
-        Database.DBUtil.FCBReaderWriter fcbReaderWriter = new Database.DBUtil.FCBReaderWriter(databaseName);
+        FCBReaderWriter fcbReaderWriter = new Database.DBUtil.FCBReaderWriter(databaseName);
         int fcbNum = fcbReaderWriter.getFCBNumByTableName(tableName);
         fcbReaderWriter.clear(fcbNum);
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        metadataReaderWriter.write(
+                metadataReaderWriter.getPFSFileCount(),
+                metadataReaderWriter.getKVTableCount() - 1);
     }
 
     public void clearBlock(int blockNum) {
