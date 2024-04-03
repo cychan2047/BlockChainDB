@@ -1,6 +1,9 @@
 package Database;
 
+import java.io.File;
 import java.util.Scanner;
+
+import static Database.DBUtil.Constants.DATABASE_DIRECTORY;
 
 public class DBController {
 
@@ -37,7 +40,13 @@ public class DBController {
         // Handles different commands
         if (action.equals("open")) {
             dbService = new DBService(argument);  // Initializes DBService with the database name
-            System.out.println("Database " + argument + " opened.");
+            File databaseFile = new File(DATABASE_DIRECTORY + "/" + argument + ".db0");
+            if (!databaseFile.exists()) {
+                dbService.create();
+                System.out.println("Database " + argument + " created.");
+            } else {
+                System.out.println("Database " + argument + " opened.");
+            }
         } else if (dbService == null) {
             System.out.println("No database is currently open. Please open a database first.");
         } else {
