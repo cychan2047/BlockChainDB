@@ -9,7 +9,7 @@
 This Java application implements a file-based NoSQL database management system with B-tree as its indexing structure. It features a command-line interface (CLI) for database interactions, supporting basic operations such as open, put, get, remove, find, quit and so on.
 
 ## User Guidance
-- CLone Main branch and start <main> application in [./src/Database/main.java].
+- CLone Main branch and start main application in [./src/Database/main.java].
 - Expected to initialize input with "open" + " " + [your DBname].
 - You are welcome to fiddel with CLI using [command] + " " + [input].
 
