@@ -39,6 +39,8 @@ public class DBService {
             throw new IllegalArgumentException("Table name is too long. Max length is " + FILE_NAME_LENGTH_MAX);
         }
         // TableName example: "movies-test.csv"
+
+        System.out.println("Putting data into table: " + tableName);
         DataIndexFileWriter writer = new DataIndexFileWriter(tableName, databaseName);
         writer.write();
 
@@ -46,7 +48,7 @@ public class DBService {
         MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
         int kvTableCount = metadataReaderWriter.getKVTableCount();
         metadataReaderWriter.write(1, kvTableCount + 1);
-        writer.getBTree().display();
+//        writer.getBTree().display();
     };
 
     public void get(String OSPath, String tableName) {

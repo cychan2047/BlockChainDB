@@ -8,14 +8,26 @@ import static Database.DBUtil.Constants.*;
 public class main {
 
     public static void main(String[] args) {
-//       testCreate();
-//        testPut();
+//        System.out.println("Hello World");
+//        testCreate();
+        testPut();
 //        testGet();
 //        testRm();
 //        testFind();
 //        testDir();
 //        testKill();
-          testDBController();
+//          testDBController();
+//        testPutLarge();
+    }
+
+    public static void testPutLarge() {
+        String databaseName = "test_group1";
+        String displayFileName = "test_output.txt";
+        String tableName = "movies-small.csv";
+        DBService dbService = new DBService(databaseName);
+        dbService.put(tableName);
+        printTestFile("test_group1", displayFileName, 0);
+        System.out.println("Put completed");
     }
 
     public static void testDBController() {
@@ -32,8 +44,8 @@ public class main {
         DBRepository repo = new DBRepository(databaseName);
         repo.createPFSFile(0);
         printTestFile("test_group1", "test_output1.txt",0);
-        repo.createPFSFile(1);
-        printTestFile("test_group1", "test_output2.txt", 1);
+//        repo.createPFSFile(1);
+//        printTestFile("test_group1", "test_output2.txt", 1);
         System.out.println("Create completed");
     }
 
@@ -80,12 +92,12 @@ public class main {
     }
 
     public static void testPut() {
-        System.out.println(System.getProperty("file.encoding"));
+        System.out.println("Put started");
         String databaseName = "test_group1";
         String displayFileName = "test_output.txt";
         String tableName = "movies-test.csv";
         DBService dbService = new DBService(databaseName);
-//        dbService.create();
+////        dbService.create();
         dbService.put(tableName);
         printTestFile("test_group1", displayFileName, 0);
         System.out.println("Put completed");
