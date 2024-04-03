@@ -43,7 +43,7 @@ public class main {
         String databaseName = "test_group1";
         DBRepository repo = new DBRepository(databaseName);
         repo.createPFSFile(0);
-        printTestFile("test_group1", "test_output1.txt",0);
+        printTestFile("test_group1", "test_output.txt",0);
 //        repo.createPFSFile(1);
 //        printTestFile("test_group1", "test_output2.txt", 1);
         System.out.println("Create completed");
