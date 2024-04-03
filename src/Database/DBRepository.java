@@ -25,6 +25,10 @@ public class DBRepository {
     public void createPFSFile(int PFSFileCount) {
         // Create a new file
         String name = databaseName + ".db" + PFSFileCount;
+        File directory = new File(DATABASE_DIRECTORY);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
         File file = new File(DATABASE_DIRECTORY, name);
         try {
             boolean created = file.createNewFile();

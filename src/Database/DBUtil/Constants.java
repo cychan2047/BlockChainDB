@@ -27,7 +27,11 @@ public final class Constants {
     public static final String TABLE_DIRECTORY = "./src/KVTables";
 
     // FSM (Free Space Management) constants
-    public static final int FSM_BLOCK_NUM = 9;
+    public static final int STARTING_FSM_BLOCK_NUM = 6;
+
+    public static final int FSM_NUM_OF_BLOCK_PER_DIGIT = 4;
+
+    public static final int ENDING_FSM_BLOCK_NUM = 9;
     public static final int FSM_BLOCK_OFFSET = 0;
     public static final int FSM_PFS_FILE_NUM = 0;
 
@@ -58,11 +62,11 @@ public final class Constants {
 
     public static final int STARTING_FCB_NUM = 1;
 
-    public static final int ENDING_FCB_NUM = 8;
+    public static final int ENDING_FCB_NUM = 5;
 
     public static final int FCB_AVAILABILITY_OFFSET = 254;
-    public static final String FCB_AVAILABLE_MARKER = "0";
-    public static final String FCB_NOT_AVAILABLE_MARKER = "1";
+    public static final String AVAILABLE_MARKER = "0";
+    public static final String NOT_AVAILABLE_MARKER = "1";
 
     public static final int FILE_NAME_LENGTH_MAX = 20;
     public static final int FCB_PFS_FILE_NUM = METADATA_PFS_FILE_NUM;

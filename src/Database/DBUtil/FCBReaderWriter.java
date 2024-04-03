@@ -31,7 +31,7 @@ public class FCBReaderWriter {
             repo.write(FCB_PFS_FILE_NUM, STARTING_DATA_BLOCK_OFFSET, fcbNum, dataStartingBlockNum);
             repo.write(FCB_PFS_FILE_NUM, ROOT_INDEX_BLOCK_OFFSET, fcbNum, indexRootBlockNum);
             repo.write(FCB_PFS_FILE_NUM, ENDING_DATA_BLOCK_OFFSET, fcbNum, dataEndingBlockNum);
-            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, fcbNum, FCB_NOT_AVAILABLE_MARKER);
+            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, fcbNum, NOT_AVAILABLE_MARKER);
         } catch (IOException e) {
             Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
         }
@@ -41,7 +41,7 @@ public class FCBReaderWriter {
         try {
             for (int i = STARTING_FCB_NUM; i <= ENDING_FCB_NUM; i++) {
                 repo.write(FCB_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, i, FCB_MARKER);
-                repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, i, FCB_AVAILABLE_MARKER);
+                repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, i, AVAILABLE_MARKER);
             }
         } catch (IOException e) {
             Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
@@ -92,7 +92,7 @@ public class FCBReaderWriter {
                 System.out.println("Trying: " + i);
                 System.out.println(repo.readBlock(FCB_PFS_FILE_NUM, i));
                 if (repo.readChar(FCB_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, i).equals(FCB_MARKER) &&
-                        repo.readChar(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, i).equals(FCB_AVAILABLE_MARKER)) {
+                        repo.readChar(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, i).equals(AVAILABLE_MARKER)) {
                     return i;
                 }
             }
@@ -143,7 +143,7 @@ public class FCBReaderWriter {
     public void clear(int FCBNum) {
         try {
             repo.write(FCB_PFS_FILE_NUM, TABLE_NAME_OFFSET, FCBNum, " ".repeat(FCB_AVAILABILITY_OFFSET));
-            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, FCBNum, FCB_AVAILABLE_MARKER);
+            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, FCBNum, AVAILABLE_MARKER);
         } catch (IOException e) {
             Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
         }
