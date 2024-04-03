@@ -3,6 +3,8 @@ package Database.DBUtil;
 import Database.DBRepository;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 import static Database.DBUtil.Constants.*;
 
@@ -17,19 +19,26 @@ public class FCBReaderWriter {
         this.repo = new DBRepository(databaseName);
     }
 
-    public void write(int FCBBlockNum, String tableName, int tableSize, String tableTime, int startingDataBlock, int rootIndexBlock, int usedDataBlockCount, String remark) throws IOException {
+    public void write(String tableName, int tableSize, String tableTime, int startingDataBlock, int rootIndexBlock) throws IOException {
         DBRepository repo = new DBRepository(databaseName);
-        if (remark.length() > 40) {
-            remark = remark.substring(0, 40);
-        }
         try {
-            repo.write(FCBBlockNum, TABLE_NAME_OFFSET, FCB_BLOCK_NUM, tableName);
-            repo.write(FCBBlockNum, TABLE_SIZE_OFFSET, FCB_BLOCK_NUM, Integer.toString(tableSize));
-            repo.write(FCBBlockNum, TABLE_TIME_OFFSET, FCB_BLOCK_NUM, tableTime);
-            repo.write(FCBBlockNum, STARTING_DATA_BLOCK_OFFSET, FCB_BLOCK_NUM, Integer.toString(startingDataBlock));
-            repo.write(FCBBlockNum, ROOT_INDEX_BLOCK_OFFSET, FCB_BLOCK_NUM, Integer.toString(rootIndexBlock));
-            repo.write(FCBBlockNum, USED_DATA_BLOCK_COUNT, FCB_BLOCK_NUM, Integer.toString(usedDataBlockCount));
-            repo.write(FCBBlockNum, REMARK_OFFSET, FCB_BLOCK_NUM, remark);
+            repo.write(FCB_PFS_FILE_NUM, TABLE_NAME_OFFSET, FCB_BLOCK_NUM, tableName);
+            repo.write(FCB_PFS_FILE_NUM, TABLE_SIZE_OFFSET, FCB_BLOCK_NUM, Integer.toString(tableSize));
+            repo.write(FCB_PFS_FILE_NUM, TABLE_TIME_OFFSET, FCB_BLOCK_NUM, tableTime);
+            repo.write(FCB_PFS_FILE_NUM, STARTING_DATA_BLOCK_OFFSET, FCB_BLOCK_NUM, Integer.toString(startingDataBlock));
+            repo.write(FCB_PFS_FILE_NUM, ROOT_INDEX_BLOCK_OFFSET, FCB_BLOCK_NUM, Integer.toString(rootIndexBlock));
+            repo.write(FCB_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, FCB_BLOCK_NUM, FCB_NOT_AVAILABLE_MARKER);
+        } catch (IOException e) {
+            Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
+        }
+    }
+
+    public void initialize() {
+        try {
+            for (int i = STARTING_FCB_NUM; i < ENDING_FCB_NUM; i++) {
+                repo.write(FSM_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, i, FCB_MARKER);
+                repo.write(FSM_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, i, FCB_AVAILABLE_MARKER);
+            }
         } catch (IOException e) {
             Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
         }
@@ -41,7 +50,7 @@ public class FCBReaderWriter {
             while (repo.readChar(FSM_PFS_FILE_NUM, FILE_TYPE_MARKER_OFFSET, currentIndex).equals(FCB_MARKER)) {
                 String currentTableName = repo.read(FSM_PFS_FILE_NUM, TABLE_NAME_OFFSET, currentIndex, TABLE_SIZE_OFFSET - TABLE_NAME_OFFSET);
                 if (removeTrailingSpaces(currentTableName).equals(tableName)) {
-                    return repo.read(FSM_PFS_FILE_NUM, ROOT_INDEX_BLOCK_OFFSET, currentIndex, USED_DATA_BLOCK_COUNT - ROOT_INDEX_BLOCK_OFFSET);
+                    return repo.read(FSM_PFS_FILE_NUM, ROOT_INDEX_BLOCK_OFFSET, currentIndex, ENDING_DATA_BLOCK_OFFSET - ROOT_INDEX_BLOCK_OFFSET);
                 }
                 currentIndex++;
             }
@@ -75,4 +84,22 @@ public class FCBReaderWriter {
         return s.substring(0, endIndex + 1);
     }
 
+    public int getNextAvailableFCB() {
+        try {
+            for (int i = STARTING_FCB_NUM; i < ENDING_FCB_NUM; i++) {
+                if (repo.readChar(FSM_PFS_FILE_NUM, FCB_AVAILABILITY_OFFSET, i).equals(FCB_AVAILABLE_MARKER)) {
+                    return i;
+                }
+            }
+        } catch (IOException e) {
+            Logger.getLogger(FCBReaderWriter.class.getName()).severe(e.getMessage());
+        }
+        return -1;
+    }
+
+    public String getCurrentDataTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return now.format(formatter);
+    }
 }

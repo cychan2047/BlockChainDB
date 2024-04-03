@@ -7,8 +7,7 @@ public final class Constants {
     public static final int TABLE_TIME_OFFSET = 60;
     public static final int STARTING_DATA_BLOCK_OFFSET = 80;
     public static final int ROOT_INDEX_BLOCK_OFFSET = 90;
-    public static final int USED_DATA_BLOCK_COUNT = 100;
-    public static final int REMARK_OFFSET = 110;
+    public static final int ENDING_DATA_BLOCK_OFFSET = 100;
     public static final int FCB_BLOCK_NUM = 1;
 
     // Offsets for database information
@@ -22,7 +21,7 @@ public final class Constants {
     public static final int DB_SIZE_OFFSET = 50;
     public static final int PFS_FILE_COUNT_OFFSET = 60;
     public static final int BLOCK_SIZE_OFFSET = 70;
-    public static final int KV_TABLE_COUNT = 80;
+    public static final int KV_TABLE_OFFSET = 80;
 
     // Directory paths
     public static final String DATABASE_DIRECTORY = "./src/Database/PFSFiles";
@@ -54,4 +53,18 @@ public final class Constants {
     public static final int KEY_LENGTH = 8;
     public static final int NUM_OF_RECORDS = BLOCK_SIZE / RECORD_SIZE;
 
+    public static final int PARENT_BLOCK_NUM_OFFSET = 250;
+
+    public static final int METADATA_NUM_LENGTH_MAX = 10;
+
+    public static final int STARTING_FCB_NUM = 1;
+
+    public static final int ENDING_FCB_NUM = 8;
+
+    public static final int FCB_AVAILABILITY_OFFSET = 254;
+    public static final String FCB_AVAILABLE_MARKER = "0";
+    public static final String FCB_NOT_AVAILABLE_MARKER = "1";
+
+    public static final int FILE_NAME_LENGTH_MAX = 20;
+    public static final int FCB_PFS_FILE_NUM = METADATA_PFS_FILE_NUM;
 }
