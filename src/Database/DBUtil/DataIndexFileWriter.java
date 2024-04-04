@@ -69,9 +69,6 @@ public class DataIndexFileWriter {
             String line;
             List<Integer> blockNums = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
-                System.out.println("Line: " + line);
-                // Locate the block to write
-                System.out.println("AvailableSlots: " + availableSlots);
                 if (!availableSlots.isEmpty()) {
                     slotNum = availableSlots.poll();
                 } else {
@@ -102,14 +99,16 @@ public class DataIndexFileWriter {
                 // Step 2: Mark the slot as occupied
                 repo.write(PFSFileNum, RECORD_SLOT_OFFSET + slotNum, currentBlockNum, NOT_AVAILABLE_MARKER);
                 // Step 3: Update FSM if all slots are occupied
-                System.out.println("Record slot: " + repo.read(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, RECORD_SLOT_SIZE));
                 if (repo.read(PFSFileNum, RECORD_SLOT_OFFSET, currentBlockNum, RECORD_SLOT_SIZE).
                         equals("1111")) {
                     fsmReaderWriter.setAvailability(blockNum, false);
                 }
                 // Step 4: Add id to the BTree
-                int id = Integer.parseInt(getRecordId(line));
-                bTree.insert(id, blockNum);
+                String idString = getRecordId(line);
+                if (idString.matches("[0-9]+")) {
+                    int id = Integer.parseInt(idString);
+                    bTree.insert(id, blockNum);
+                }
             }
             System.out.println("Data file completed");
 
@@ -135,10 +134,6 @@ public class DataIndexFileWriter {
     public void writeIndexFile() {
         try {
             HashSet<BTreeNode> nodes = bTree.getNodes();
-            for (BTreeNode node : nodes) {
-                System.out.println("Node: " + node);
-            }
-
             HashMap<Integer, Integer> keyBlock = bTree.getKeyBlock(); // Get the data block number where the key is in
             HashMap<BTreeNode, Integer> nodeBlockNums = new HashMap<>(); // Record the index node's index block number
             for (BTreeNode node : nodes) {
@@ -154,24 +149,7 @@ public class DataIndexFileWriter {
                 repo.write(PFSFileNum, 0, currentBlockNum, serializedNode);
                 repo.write(PFSFileNum, FILE_TYPE_MARKER_OFFSET, currentBlockNum, INDEX_MARKER);
             }
-//            // Print nodeBlockNums
-//            for (Map.Entry<BTreeNode, Integer> entry : nodeBlockNums.entrySet()) {
-//                String serialized = serializeBTreeNode(entry.getKey(), keyBlock, nodeBlockNums);
-//                System.out.println("Node: " + serialized + " BlockNum: " + entry.getValue());
-//            }
 
-//
-//            // Write the blockNum of each index node's parent
-//            for (BTreeNode node : nodes) {
-//                int blockNum = nodeBlockNums.get(node);
-//                int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
-//                int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
-//                if (node != bTree.getRoot()) {
-//                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, blockNumTo5Digits(parentBlockNum));
-//                } else {
-//                    repo.write(PFSFileNum, PARENT_BLOCK_NUM_OFFSET, currentBlockNum, NULL_NODE_NUM);
-//                }
-//            }
             indexRootBlockNum = nodeBlockNums.get(bTree.getRoot());
         } catch (IOException e) {
             Logger.getLogger(DataIndexFileWriter.class.getName()).severe(e.getMessage());

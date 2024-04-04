@@ -1,5 +1,8 @@
 package Database;
 
+import Database.DBUtil.FSMReaderWriter;
+import Database.DBUtil.MetadataReaderWriter;
+
 import java.io.*;
 import java.util.logging.Logger;
 
@@ -8,25 +11,63 @@ import static Database.DBUtil.Constants.*;
 public class main {
 
     public static void main(String[] args) {
-//        System.out.println("Hello World");
-//        testCreate();
+
+        testCreate();
+//        testPutMultipleFiles();
+//        testFSMReaderWriter();
+
 //        testPut();
 //        testGet();
 //        testRm();
 //        testFind();
 //        testDir();
 //        testKill();
-        testDBController();
-        //testPutLarge();
+//          testDBController();
+//        testCreate();
+        testPutLarge();
+//        testGetPFSFileCount();
+    }
+
+    public static void testPutMultipleFiles() {
+        String databaseName = "test_group1";
+        String table1 = "movies-test1.csv";
+        String table2 = "movies-test2.csv";
+        String display1 = "test_output1.txt";
+        String display2 = "test_output2.txt";
+        DBService dbService = new DBService(databaseName);
+        dbService.put(table1);
+        dbService.put(table2);
+        printTestFile("test_group1", display1, 0);
+        printTestFile("test_group1", display2, 1);
+        System.out.println("Put completed");
+    }
+
+    public static void testFSMReaderWriter() {
+        String databaseName = "test_group1";
+        FSMReaderWriter fsm = new FSMReaderWriter(databaseName);
+        for (int i = 0; i < 5000; i++) {
+            System.out.println("GotBlockNum: " + fsm.getNextAvailableBlock());
+        }
+        printTestFile("test_group1", "test_output1.txt", 0);
+        printTestFile("test_group1", "test_output2.txt", 1);
+    }
+
+    public static void testGetPFSFileCount() {
+        String databaseName = "test_group1";
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        System.out.println(metadataReaderWriter.getPFSFileCount());
+
     }
 
     public static void testPutLarge() {
         String databaseName = "test_group1";
-        String displayFileName = "test_output.txt";
+        String displayFileName0 = "test_output0.txt";
+        String displayFileName1 = "test_output1.txt";
         String tableName = "movies-small.csv";
         DBService dbService = new DBService(databaseName);
         dbService.put(tableName);
-        printTestFile("test_group1", displayFileName, 0);
+        printTestFile("test_group1", displayFileName0, 0);
+        printTestFile("test_group1", displayFileName1, 1);
         System.out.println("Put completed");
     }
 
@@ -43,7 +84,7 @@ public class main {
         String databaseName = "test_group1";
         DBRepository repo = new DBRepository(databaseName);
         repo.createPFSFile(0);
-        printTestFile("test_group1", "test_output.txt",0);
+        printTestFile("test_group1", "test_output1.txt",0);
 //        repo.createPFSFile(1);
 //        printTestFile("test_group1", "test_output2.txt", 1);
         System.out.println("Create completed");
