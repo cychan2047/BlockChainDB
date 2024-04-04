@@ -125,7 +125,6 @@ public class FSMReaderWriter {
                 return result;
             }
         }
-        System.out.println("Creating a new PFS file");
         repo.createPFSFile(totalPFSFileNum);
         setAvailability(totalPFSFileNum * BLOCK_NUM_PER_FILE, false);
         return totalPFSFileNum * BLOCK_NUM_PER_FILE;
@@ -146,10 +145,7 @@ public class FSMReaderWriter {
                                     + FSMBlockNum * BLOCK_SIZE * FSM_NUM_OF_BLOCK_PER_DIGIT
                                     + offset * FSM_NUM_OF_BLOCK_PER_DIGIT
                                     + i;
-                            System.out.println("PFSFileNum: " + PFSFileNum + ", FSMBlockNum: " + FSMBlockNum + ", offset: " + offset + ", i: " + i);
-                            System.out.println("Before blockNum: " + blockNum);
                             setAvailability(blockNum, false);
-                            System.out.println("After blockNum: " + blockNum);
                             return blockNum;
                         }
                     }

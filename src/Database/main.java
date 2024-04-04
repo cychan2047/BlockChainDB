@@ -12,7 +12,7 @@ public class main {
 
     public static void main(String[] args) {
 
-        testCreate();
+//        testCreate();
 //        testPutMultipleFiles();
 //        testFSMReaderWriter();
 //        testPut();
@@ -21,9 +21,9 @@ public class main {
 //        testFind();
 //        testDir();
 //        testKill();
-//          testDBController();
+                  testDBController();
 //        testCreate();
-        testPutLarge();
+//        testPutLarge();
 //        testGetPFSFileCount();
     }
 
@@ -106,7 +106,7 @@ public class main {
     public static void testFind() {
         String databaseName = "test_group1";
         String tableName = "movies-test.csv";
-        int key = 1;
+        int key = 1999;
         DBService dbService = new DBService(databaseName);
         dbService.find(tableName, key);
         System.out.println("Find completed");

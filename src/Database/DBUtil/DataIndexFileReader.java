@@ -59,6 +59,9 @@ public class DataIndexFileReader {
                 if (currentKey.equals(" ".repeat(KEY_LENGTH))) {
                     return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));
                 }
+                if(!currentKey.matches("\\d+")){
+                    return "Key is not found in the database";
+                }; // Check if the key is a number (integer
                 int currentKeyInt = Integer.parseInt(currentKey);
                 if (key < currentKeyInt) {
                     return findIndexBlock(key, Integer.parseInt(repo.read(PFSFileNum, currentKeyOffset - BLOCK_NUM_LENGTH, currentBlock, BLOCK_NUM_LENGTH)));

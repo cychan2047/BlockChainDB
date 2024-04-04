@@ -50,11 +50,8 @@ public class DataIndexFileWriter {
 
     // Write the entire table into the block
     public void write() {
-        System.out.println("Running writeDataFile");
         writeDataFile();
-        System.out.println("Running writeIndexFile");
         writeIndexFile();
-        System.out.println("Running updateFCB");
         updateFCB();
     }
 
@@ -140,7 +137,6 @@ public class DataIndexFileWriter {
                 int blockNum = fsmReaderWriter.getNextAvailableBlock();
                 nodeBlockNums.put(node, blockNum);
             }
-            System.out.println("NodeBlockNums: " + nodeBlockNums);
             for (BTreeNode node : nodes) {
                 int blockNum = nodeBlockNums.get(node);
                 int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
@@ -199,6 +195,7 @@ public class DataIndexFileWriter {
             String keyBlockNum = blockNumTo5Digits(keyBlock.get(node.getKeys().get(i)));
             result.append(NULL_NODE_NUM).append(key).append(keyBlockNum);
         }
+        result.append(NULL_NODE_NUM);
         return result.toString();
     }
 
