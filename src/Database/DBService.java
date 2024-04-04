@@ -27,7 +27,7 @@ public class DBService {
         // Creates a new database file
         dbRepository.createPFSFile(PFSFileCount);
         MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
-        metadataReaderWriter.write(1, 0);
+        metadataReaderWriter.write(METADATA_PFS_FILE_NUM, 0);
         FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
         fsmReaderWriter.initialize(0);
         FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
@@ -47,8 +47,8 @@ public class DBService {
         // Update the Metadata
         MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
         int kvTableCount = metadataReaderWriter.getKVTableCount();
-        metadataReaderWriter.write(1, kvTableCount + 1);
-//        writer.getBTree().display();
+        metadataReaderWriter.write(METADATA_PFS_FILE_NUM, kvTableCount + 1);
+        //writer.getBTree().display();
     };
 
     public void get(String OSPath, String tableName) {
@@ -56,8 +56,13 @@ public class DBService {
         if (!dir.exists()) dir.mkdirs();
         File file = new File(OSPath, tableName);
         FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+        int blockNum = fcbReaderWriter.getStartingBlockNumByTableName(tableName);
+        if (blockNum == -1) {
+            System.out.println("Table '" + tableName + "' not found in the database.");
+            return;
+        }
+        File file = new File(OSPath, tableName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            int blockNum = fcbReaderWriter.getStartingBlockNumByTableName(tableName);
             do {
                 int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
                 int currentFileNum = blockNum / BLOCK_NUM_PER_FILE;
@@ -74,6 +79,7 @@ public class DBService {
                 if (nextBlock.equals("EOF  ")) break;
                 blockNum = Integer.parseInt(nextBlock);
             } while (true);
+            System.out.println("File '" + tableName + "' has been written to " + OSPath);
         } catch (IOException e) {
             Logger.getLogger(DBService.class.getName()).severe("Error writing to file: " + e.getMessage());
         }
@@ -96,28 +102,27 @@ public class DBService {
                 String databaseName = file.getName().split("\\.db")[0];
                 System.out.println("Database: " + databaseName);
 
-                StringBuilder metadata = new StringBuilder();
-                StringBuilder fcbData = new StringBuilder();
-
                 try {
                     // Read metadata from the METADATA_BLOCK_NUM
-                    for (int i = 0; i < BLOCK_SIZE_OFFSET; i++) {
+                    StringBuilder metadata = new StringBuilder();
+                    for (int i = 0; i < 90; i++) {
                         metadata.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, i, METADATA_BLOCK_NUM));
                     }
                     String metadataName = metadata.length() >= 50 ? metadata.substring(0, 50).trim() : metadata.toString();
                     String metadataSize = metadata.length() >= 60 ? metadata.substring(50, 60).trim() : "N/A";
-                    String metadataCount = metadata.length() >= 70 ? metadata.substring(60, 70).trim() : "N/A";
+                    String metadataCount = metadata.length() >= 80 ? metadata.substring(80, 90).trim() : "N/A";
 
                     System.out.println("MetaData: " + metadataName + "  Size: " + metadataSize + "  FileCount: " + metadataCount);
 
 
                     // Read file-specific data from the FCB_BLOCK_NUM
                     for (int i = STARTING_FCB_NUM; i < ENDING_FCB_NUM; i++) {
-                        if (dbRepository.readChar(METADATA_PFS_FILE_NUM, 0, i).equals(" ")) {
-                            break;
-                        } else {
+                            StringBuilder fcbData = new StringBuilder();
                             for (int j = 0; j < STARTING_DATA_BLOCK_OFFSET; j++) {
                                 fcbData.append(dbRepository.readChar(METADATA_PFS_FILE_NUM, j, i));
+                            }
+                            if (fcbData.toString().trim().isEmpty()) {
+                                continue;
                             }
                             String fcbDataName = fcbData.length() >= 50 ? fcbData.substring(0, 50).trim() : fcbData.toString();
                             String fcbDataSize = fcbData.length() >= 60 ? fcbData.substring(50, 60).trim() : "N/A";
@@ -125,8 +130,6 @@ public class DBService {
 
                             System.out.println("FCB Data: " + fcbDataName + "  Size: " + fcbDataSize + "  Time: " + fcbDataTime);
                             fcbData.append("\n");
-                        }
-
                     }
 
                 } catch (IOException e) {

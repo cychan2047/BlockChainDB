@@ -1,6 +1,9 @@
 package Database;
 
+import java.io.File;
 import java.util.Scanner;
+
+import static Database.DBUtil.Constants.DATABASE_DIRECTORY;
 
 public class DBController {
 
@@ -19,7 +22,7 @@ public class DBController {
     public void startCLI() {
         String command;
         do {
-            System.out.println("NoSQL>");
+            System.out.print("NoSQL>"); // Display the prompt on the same line as input
             command = scanner.nextLine().trim(); // Reads and trims user input
             processCommand(command); // Processes the command
         } while (!command.equalsIgnoreCase("quit")); // Continues until 'quit' is entered
@@ -37,7 +40,13 @@ public class DBController {
         // Handles different commands
         if (action.equals("open")) {
             dbService = new DBService(argument);  // Initializes DBService with the database name
-            System.out.println("Database " + argument + " opened.");
+            File databaseFile = new File(DATABASE_DIRECTORY + "/" + argument + ".db0");
+            if (!databaseFile.exists()) {
+                dbService.create();
+                System.out.println("Database " + argument + " created.");
+            } else {
+                System.out.println("Database " + argument + " opened.");
+            }
         } else if (dbService == null) {
             System.out.println("No database is currently open. Please open a database first.");
         } else {
@@ -46,7 +55,7 @@ public class DBController {
                     dbService.put(argument);
                     break;
                 case "get":
-                    dbService.get(System.getProperty("user.dir"), argument);
+                    dbService.get(DATABASE_DIRECTORY,argument);
                     break;
                 case "rm":
                     dbService.rm(argument);

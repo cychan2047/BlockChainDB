@@ -1,30 +1,36 @@
-# README
+# README:
 
 ## Author
-- Chuyang Chen 
-- Yixiao Chen 
+-Chuyang Chen NUID: 002756503
+-Yixiao Chen NUID: 002672046 
 
 ## Overview
 
 This Java application implements a file-based NoSQL database management system with B-tree as its indexing structure. It features a command-line interface (CLI) for database interactions, supporting basic operations such as open, put, get, remove, find, quit and so on.
 
+## User Guidance
+- CLone Main branch and start main application in [./src/Database/main.java].
+- Expected to initialize input with "open" + " " + [your DBname].
+- You are welcome to fiddel with CLI using [command] + " " + [input].
+
 ## Known Bugs
 
 - The underlying data value is truncated before stored into data blocks.
-- No utilization of memory, compromising efficiency.
-- Exception handling is minimal, leading to possible exits on I/O errors.
+- When intput size is high, it could cause exceeding error for put and find.
 
 ## Limitations
 
 - The system utilizes a basic CLI without graphical interface.
+- No utilization of memory, compromising efficiency. 
 - Single-user access and does not support concurrent operations.
 - Single directory file storage, not accounting for distributed environments.
-- Handles only text data; binary data or complex data types are unsupported.
+- Handles only text data. Binary data or complex data types are unsupported.
 
 ## Assumptions
 
 - Block and file sizes are fixed and do not adapt to the dataset's size or requirements.
-- The system expects correct user input and lacks robust input validation.
+- Data file size are within 6digits. Otherwise not yet tested. 
+- Users are expected to provide correct input with prompt for application to work.
 
 ## Future Enhancements
 
