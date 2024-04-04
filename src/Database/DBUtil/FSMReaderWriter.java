@@ -77,7 +77,6 @@ public class FSMReaderWriter {
     }
 
     public boolean getAvailability(int blockNum) {
-        // public String readChar(String databaseName, int PFSFileCount, int offset, int blockNum)
         int currentBlockNum = blockNum % BLOCK_NUM_PER_FILE;
         int PFSFileNum = blockNum / BLOCK_NUM_PER_FILE;
         int offset = currentBlockNum % (FSM_NUM_OF_BLOCK_PER_DIGIT * BLOCK_SIZE);
@@ -123,7 +122,7 @@ public class FSMReaderWriter {
         for (int i = 0; i < totalPFSFileNum; i++) {
             int result = getNextAvailableBlock(i);
             if (result != -1) {
-                return result + i * BLOCK_NUM_PER_FILE;
+                return result;
             }
         }
         System.out.println("Creating a new PFS file");
@@ -148,7 +147,9 @@ public class FSMReaderWriter {
                                     + offset * FSM_NUM_OF_BLOCK_PER_DIGIT
                                     + i;
                             System.out.println("PFSFileNum: " + PFSFileNum + ", FSMBlockNum: " + FSMBlockNum + ", offset: " + offset + ", i: " + i);
+                            System.out.println("Before blockNum: " + blockNum);
                             setAvailability(blockNum, false);
+                            System.out.println("After blockNum: " + blockNum);
                             return blockNum;
                         }
                     }

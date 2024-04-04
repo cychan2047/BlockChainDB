@@ -13,7 +13,8 @@ public class main {
     public static void main(String[] args) {
 
         testCreate();
-        testFSMReaderWriter();
+//        testPutMultipleFiles();
+//        testFSMReaderWriter();
 //        testPut();
 //        testGet();
 //        testRm();
@@ -22,8 +23,22 @@ public class main {
 //        testKill();
 //          testDBController();
 //        testCreate();
-//        testPutLarge();
+        testPutLarge();
 //        testGetPFSFileCount();
+    }
+
+    public static void testPutMultipleFiles() {
+        String databaseName = "test_group1";
+        String table1 = "movies-test1.csv";
+        String table2 = "movies-test2.csv";
+        String display1 = "test_output1.txt";
+        String display2 = "test_output2.txt";
+        DBService dbService = new DBService(databaseName);
+        dbService.put(table1);
+        dbService.put(table2);
+        printTestFile("test_group1", display1, 0);
+        printTestFile("test_group1", display2, 1);
+        System.out.println("Put completed");
     }
 
     public static void testFSMReaderWriter() {
@@ -67,7 +82,7 @@ public class main {
         String databaseName = "test_group1";
         DBRepository repo = new DBRepository(databaseName);
         repo.createPFSFile(0);
-        printTestFile("test_group1", "test_output.txt",0);
+        printTestFile("test_group1", "test_output1.txt",0);
 //        repo.createPFSFile(1);
 //        printTestFile("test_group1", "test_output2.txt", 1);
         System.out.println("Create completed");
