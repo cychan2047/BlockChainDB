@@ -1,5 +1,8 @@
 package Database;
 
+import Database.DBUtil.FSMReaderWriter;
+import Database.DBUtil.MetadataReaderWriter;
+
 import java.io.*;
 import java.util.logging.Logger;
 
@@ -8,25 +11,46 @@ import static Database.DBUtil.Constants.*;
 public class main {
 
     public static void main(String[] args) {
-//        System.out.println("Hello World");
-//        testCreate();
-        testPut();
+
+        testCreate();
+        testFSMReaderWriter();
+//        testPut();
 //        testGet();
 //        testRm();
 //        testFind();
 //        testDir();
 //        testKill();
 //          testDBController();
+//        testCreate();
 //        testPutLarge();
+//        testGetPFSFileCount();
+    }
+
+    public static void testFSMReaderWriter() {
+        String databaseName = "test_group1";
+        FSMReaderWriter fsm = new FSMReaderWriter(databaseName);
+        for (int i = 0; i < 5000; i++) {
+            System.out.println("GotBlockNum: " + fsm.getNextAvailableBlock());
+        }
+        printTestFile("test_group1", "test_output1.txt", 0);
+        printTestFile("test_group1", "test_output2.txt", 1);
+    }
+
+    public static void testGetPFSFileCount() {
+        String databaseName = "test_group1";
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        System.out.println(metadataReaderWriter.getPFSFileCount());
     }
 
     public static void testPutLarge() {
         String databaseName = "test_group1";
-        String displayFileName = "test_output.txt";
+        String displayFileName0 = "test_output0.txt";
+        String displayFileName1 = "test_output1.txt";
         String tableName = "movies-small.csv";
         DBService dbService = new DBService(databaseName);
         dbService.put(tableName);
-        printTestFile("test_group1", displayFileName, 0);
+        printTestFile("test_group1", displayFileName0, 0);
+        printTestFile("test_group1", displayFileName1, 1);
         System.out.println("Put completed");
     }
 

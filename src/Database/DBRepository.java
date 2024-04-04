@@ -53,14 +53,19 @@ public class DBRepository {
             Logger.getLogger(DBRepository.class.getName()).severe(e.getMessage());
         }
 
-        System.out.println("PFSFileCount: " + PFSFileCount);
-
         // Initialize the metadata, FSM, and FCB
+        System.out.println("Running MetadataReaderWriter, PFSFileCount: " + PFSFileCount);
         if (PFSFileCount == 0) {
             MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
             metadataReaderWriter.write(1, 0);
             FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
             fcbReaderWriter.initialize();
+        } else {
+            MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+            metadataReaderWriter.write(
+                    PFSFileCount + 1,
+                    metadataReaderWriter.getKVTableCount()
+            );
         }
         FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
         fsmReaderWriter.initialize(PFSFileCount);
@@ -78,7 +83,7 @@ public class DBRepository {
         }
 
         try (RandomAccessFile file = new RandomAccessFile(pathname, "rw")) {
-            System.out.println("offest: " + offset + " blockNum: " + blockNum + " content: " + content + " PFsFileNum: " + PFSFileNum);
+//            System.out.println("offest: " + offset + " blockNum: " + blockNum + " content: " + content + " PFsFileNum: " + PFSFileNum);
             file.seek(offset + (long) blockNum * BLOCK_SIZE);
             file.writeBytes(content);
         } catch (IOException e) {

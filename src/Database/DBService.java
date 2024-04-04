@@ -52,6 +52,8 @@ public class DBService {
     };
 
     public void get(String OSPath, String tableName) {
+        File dir = new File(OSPath);
+        if (!dir.exists()) dir.mkdirs();
         File file = new File(OSPath, tableName);
         FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {

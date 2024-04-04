@@ -117,23 +117,19 @@ public class FSMReaderWriter {
         // If all full, create a new one and return the first block automatically.
         // BlockNum = PFSFileNum * BLOCK_NUM_PER_FILE + currentBlockNum
         DBRepository repo = new DBRepository(databaseName);
-        File file;
-        int currentPFSFileNum = METADATA_PFS_FILE_NUM;
-        try {
-            String totalPFSFileNum = repo.read(METADATA_PFS_FILE_NUM, PFS_FILE_COUNT_OFFSET, METADATA_BLOCK_NUM, BLOCK_NUM_LENGTH);
-            int totalPFSFileInt = Integer.parseInt(removeTrailingSpaces(totalPFSFileNum));
-            for (int i = 0; i < totalPFSFileInt; i++) {
-                int result = getNextAvailableBlock(i);
-                if (result != -1) {
-                    return result + i * BLOCK_NUM_PER_FILE;
-                }
+        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+        int totalPFSFileNum = metadataReaderWriter.getPFSFileCount();
+//        System.out.println("totalPFSFileCount: " + totalPFSFileNum);
+        for (int i = 0; i < totalPFSFileNum; i++) {
+            int result = getNextAvailableBlock(i);
+            if (result != -1) {
+                return result + i * BLOCK_NUM_PER_FILE;
             }
-            repo.createPFSFile(totalPFSFileInt);
-            return totalPFSFileInt * BLOCK_NUM_PER_FILE;
-        } catch (IOException e) {
-            Logger.getLogger(FSMReaderWriter.class.getName()).severe(e.getMessage());
         }
-        return -1;
+        System.out.println("Creating a new PFS file");
+        repo.createPFSFile(totalPFSFileNum);
+        setAvailability(totalPFSFileNum * BLOCK_NUM_PER_FILE, false);
+        return totalPFSFileNum * BLOCK_NUM_PER_FILE;
     }
 
 
@@ -147,9 +143,11 @@ public class FSMReaderWriter {
                     String binary = hexToBin.get(hex);
                     for (int i = 0; i < FSM_NUM_OF_BLOCK_PER_DIGIT; i++) {
                         if (binary.charAt(i) == '0') {
-                            int blockNum = FSMBlockNum * BLOCK_SIZE * FSM_NUM_OF_BLOCK_PER_DIGIT
+                            int blockNum = PFSFileNum * BLOCK_NUM_PER_FILE
+                                    + FSMBlockNum * BLOCK_SIZE * FSM_NUM_OF_BLOCK_PER_DIGIT
                                     + offset * FSM_NUM_OF_BLOCK_PER_DIGIT
                                     + i;
+                            System.out.println("PFSFileNum: " + PFSFileNum + ", FSMBlockNum: " + FSMBlockNum + ", offset: " + offset + ", i: " + i);
                             setAvailability(blockNum, false);
                             return blockNum;
                         }
