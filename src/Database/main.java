@@ -67,7 +67,7 @@ public class main {
     public static void testFind() {
         String databaseName = "test_group1";
         String tableName = "movies-test.csv";
-        int key = 1;
+        int key = 100;
         DBService dbService = new DBService(databaseName);
         dbService.find(tableName, key);
         System.out.println("Find completed");
@@ -85,7 +85,7 @@ public class main {
     public static void testGet() {
         String databaseName = "test_group1";
         String tableName = "movies-test.csv";
-        String OSPath = "./src/UserPath";
+        String OSPath = "./src/Database/PFSFiles";
         DBService dbService = new DBService(databaseName);
         dbService.get(OSPath, tableName);
         System.out.println("Get completed");

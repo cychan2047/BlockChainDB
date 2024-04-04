@@ -26,12 +26,12 @@ public class DBService {
     public void create() {
         // Creates a new database file
         dbRepository.createPFSFile(PFSFileCount);
-        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
-        metadataReaderWriter.write(METADATA_PFS_FILE_NUM, 0);
-        FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
-        fsmReaderWriter.initialize(0);
-        FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
-        fcbReaderWriter.initialize();
+//        MetadataReaderWriter metadataReaderWriter = new MetadataReaderWriter(databaseName);
+//        metadataReaderWriter.write(METADATA_PFS_FILE_NUM, 0);
+//        FSMReaderWriter fsmReaderWriter = new FSMReaderWriter(databaseName);
+//        fsmReaderWriter.initialize(0);
+//        FCBReaderWriter fcbReaderWriter = new FCBReaderWriter(databaseName);
+//        fcbReaderWriter.initialize();
     }
 
     public void put(String tableName) throws IllegalArgumentException {
